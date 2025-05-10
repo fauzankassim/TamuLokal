@@ -1,10 +1,15 @@
+const { allVisitors } = require('../services/visitors')
 
-const allVisitors = (req, res) => {
-    res.status(200).send({
-        hello: 'he'
-    })
+const getVisitors = async (req, res) => {
+    try {
+        const visitors = await allVisitors();
+        res.json(visitors)
+    }
+    catch (err) {
+    res.status(500).send(err)
+    }
 }
 
 module.exports = {
-    allVisitors
+    getVisitors
 }
