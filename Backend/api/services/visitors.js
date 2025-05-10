@@ -1,18 +1,55 @@
 const { supabase } = require('../../db')
 
-const allVisitors = async () => {
+const getVisitors = async () => {
     const { data, error } = await supabase.from('Visitor').select('*')
 
     return data;
 };
 
-const getVisitor = async (id) => {
+const getVisitorById = async (id) => {
     const { data, error } = await supabase.from('Visitor').select('*').eq('VisitorID', id).single();
 
     return data;
 };
 
+const postVisitor = async (username, email, password) => {
+
+    const { data, error } = await supabase
+        .from('Visitor')
+        .insert([
+            {Username: username, Email: email, Password: password}, 
+        ])
+        .select();
+
+    return data; 
+}
+
+const putVisitorById = async (id, updates) => {
+
+    const { data, error } = await supabase
+        .from('Visitor')
+        .update(updates)
+        .eq('VisitorID', id)
+        .select();
+
+
+    return data;
+}
+
+const deleteVisitorById = async (id) => {
+    const { error } = await supabase
+        .from('Visitor')
+        .delete()
+        .eq('VisitorID', id)
+
+    console.log(error);
+}
+
+
 module.exports = {
-    allVisitors,
-    getVisitor
+    getVisitors,
+    getVisitorById,
+    postVisitor,
+    putVisitorById,
+    deleteVisitorById
 };
