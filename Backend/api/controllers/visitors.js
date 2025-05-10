@@ -1,9 +1,20 @@
-const { allVisitors } = require('../services/visitors')
+const { allVisitors, getVisitor } = require('../services/visitors')
 
 const getVisitors = async (req, res) => {
     try {
         const visitors = await allVisitors();
-        res.json(visitors)
+        res.status(200).json(visitors)
+    }
+    catch (err) {
+    res.status(500).send(err)
+    }
+}
+
+const getVisitorById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const visitor = await getVisitor(id);
+        res.status(200).json(visitor);
     }
     catch (err) {
     res.status(500).send(err)
@@ -11,5 +22,6 @@ const getVisitors = async (req, res) => {
 }
 
 module.exports = {
-    getVisitors
+    getVisitors,
+    getVisitorById
 }
