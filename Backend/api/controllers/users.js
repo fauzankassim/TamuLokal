@@ -1,0 +1,61 @@
+const { deleteUserFollow, getUserFollow, postUserFollow, getUserByQuery ,getUserRolesById } = require('../services/users')
+
+
+const DeleteUserFollow = async (req, res) => {
+    try {
+        const { follower_id, following_id } = req.query;
+        const account = await deleteUserFollow(follower_id, following_id);
+        res.status(200).json(account);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+const GetUserFollow = async (req, res) => {
+    try { 
+        const { follower_id, following_id } = req.query;
+        console.log(follower_id);
+        const account = await getUserFollow(follower_id, following_id);
+        res.status(200).json(account);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+const PostUserFollow = async (req, res) => {
+    try {
+        const { follower_id, following_id } = req.body;
+        const account = await postUserFollow(follower_id, following_id);
+        res.status(200).json(account);
+    } catch (error) {
+        res.status(500).send(error)
+    }
+}
+
+const GetUserRolesById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const user = await getUserRolesById(id);
+        res.status(200).json(user);
+    }
+    catch (err) {
+        res.status(500).send(err)
+    }
+}
+
+const GetUserByQuery = async (req, res) => {
+    try {
+        const query = req.query.search;
+        const users = await getUserByQuery(query);
+        res.status(200).json(users);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+}
+
+
+module.exports = {
+    DeleteUserFollow,
+    GetUserFollow,
+    PostUserFollow,
+    GetUserByQuery,
+    GetUserRolesById
+}

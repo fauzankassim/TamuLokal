@@ -1,0 +1,53 @@
+/* index.css */
+@import url('https://unpkg.com/leaflet/dist/leaflet.css');
+@import "tailwindcss";
+
+
+
+:root {
+  --white: #FFFDFA;
+  --black: #171A1D;
+  --orange: #FF8225;
+  --red: #B40000;
+  --green: #026700;
+  --gray: #585858;
+  
+}
+
+/* Hide scrollbar but still allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+@layer utilities {
+  .recharts-tooltip-wrapper:focus,
+  .recharts-wrapper:focus,
+  .recharts-surface:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.leaflet-routing-container {
+  display: none !important;
+}
+
