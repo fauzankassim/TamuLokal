@@ -31,6 +31,10 @@ import MarketSpaceActionPage from './pages/MarketSpaceActionPage';
 import MarketspaceApplicationPage from './pages/MarketspaceApplicationPage';
 import MarketHistoryPage from './pages/MarketHistoryPage';
 import MarketBookmarkPage from './pages/MarketBookmarkPage';
+import MarketReviewActionPage from './pages/MarketReviewActionPage';
+import BusinessMarketReviewPage from './pages/BusinessMarketReviewPage';
+import BusinessMarketStatisticPage from './pages/BusinessMarketStatisticPage';
+import VendorStatisticPage from './pages/VendorStatisticPage';
 
 
 const router = createBrowserRouter(
@@ -66,9 +70,11 @@ const router = createBrowserRouter(
       <Route path='/category/:id' element={<CategoryPage />} />
       <Route path='/business/registration' element={<BusinessRegistrationPage />}/>
       <Route path='/auth' element={<AuthPage />}/>
+      <Route path='/market-review/:review_id' element={<MarketReviewActionPage />}/>
       <Route path='/market' element={<MarketListPage />}/>
       <Route path='/market/history' element={<MarketHistoryPage />}/>
       <Route path='/market/bookmark' element={<MarketBookmarkPage/>}/>
+      <Route path='/market/:market_id/review' element={<MarketReviewActionPage />}/>
       <Route path='/market/:id' element={<MarketPage />}/>
       <Route path='/admin' element={<AdminPage />}/>
 
@@ -76,12 +82,15 @@ const router = createBrowserRouter(
       <Route path='/visitor/:id' element={<ProfilePage />}/>
       <Route path='/organizer/:id' element={<ProfilePage />}/>
 
+      <Route path='/business/statistic' element={<VendorStatisticPage />}/>
       <Route path='/business/market' element={<BusinessMarketSpacePage />}/>
       <Route path='/business/market/apply' element={<MarketActionPage />}/>
       <Route path='/business/market/:id/edit' element={<MarketActionPage />}/>
       <Route path='/business/market/:id/plan' element={<MarketFloorPlanPage />}/>
       <Route path='/business/market/:id/space' element={<MarketSpacePage />}/>
       <Route path='/business/market/:id/property' element={<BusinessMarketPropertyPage />}/>
+      <Route path='/business/market/:market_id/review' element={<BusinessMarketReviewPage />}/>
+      <Route path='/business/market/:market_id/statistic' element={<BusinessMarketStatisticPage />}/>
     </Route>
   )
 );

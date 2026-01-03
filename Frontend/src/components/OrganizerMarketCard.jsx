@@ -37,7 +37,7 @@ const OrganizerMarketCard = ({ market, isVendor = false, onView }) => {
               <TbLayoutGrid size={20} />
             </NavLink>
             <NavLink
-              to={`/business/market/${market.id}/reviews`}
+              to={`/business/market/${market.id}/review`}
               onClick={(e) => e.stopPropagation()}
               className="p-1.5 rounded-lg bg-black/60 text-white backdrop-blur cursor-pointer"
               title="Reviews"
@@ -53,7 +53,7 @@ const OrganizerMarketCard = ({ market, isVendor = false, onView }) => {
               <TbSpeakerphone size={20} />
             </NavLink>
             <NavLink
-              to={`/business/market/${market.id}/statistics`}
+              to={`/business/market/${market.id}/statistic`}
               onClick={(e) => e.stopPropagation()}
               className="p-1.5 rounded-lg bg-black/60 text-white backdrop-blur cursor-pointer"
               title="Statistics"

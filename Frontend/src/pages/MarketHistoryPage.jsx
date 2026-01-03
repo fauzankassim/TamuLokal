@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { TbChevronLeft } from 'react-icons/tb'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 const base_url = import.meta.env.VITE_BACKEND_API_URL  // adjust if needed
@@ -60,7 +60,7 @@ const MarketHistoryPage = () => {
 
     return { displayDate, time }
   }
-
+  console.log(history);
   return (
     <div className="w-screen h-full flex flex-col relative">
       {/* ===== Header (UNCHANGED) ===== */}
@@ -90,7 +90,7 @@ const MarketHistoryPage = () => {
       {history.map((market) => (
         <div
           key={market.market_id}
-          className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col md:flex-row h-80 md:h-60 md:w-[48%]"
+          className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col md:flex-row max-h-92 md:h-60 md:w-[48%]"
         >
           {/* ===== Market Image ===== */}
           <div className="relative w-full md:w-1/2 h-32 md:h-full bg-gray-100 flex-shrink-0">
@@ -121,7 +121,7 @@ const MarketHistoryPage = () => {
               </p>
               
               {/* Scrollable visits container */}
-              <div className="max-h-40 overflow-y-auto space-y-2 pr-1 flex-1 no-scrollbar">
+              <div className="max-h-28 overflow-y-auto space-y-2 pr-1 flex-1 no-scrollbar">
                 {market.visits
                   .sort(
                     (a, b) =>
@@ -144,6 +144,25 @@ const MarketHistoryPage = () => {
                     </div>
                   ))}
               </div>
+            </div>
+            {/* ===== Leave Review Button ===== */}
+            <div className="pt-3">
+            <NavLink
+                to={
+                market.review_id != null
+                    ? `/market-review/${market.review_id}`
+                    : `/market/${market.market_id}/review`
+                }
+                className={`block w-full py-2 text-sm font-medium rounded-lg text-center transition
+                ${
+                    market.review_id != null
+                    ? "bg-orange-500 text-white hover:bg-orange-600"
+                    : "border border-orange-400 text-orange-500 hover:bg-orange-500 hover:text-white"
+                }
+                `}
+            >
+                {market.review_id != null ? "Edit review" : "Leave a review"}
+            </NavLink>
             </div>
           </div>
         </div>

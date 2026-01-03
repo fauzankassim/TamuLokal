@@ -1,6 +1,8 @@
 const controllers = require('../controllers/visitors')
 const router = require('express').Router()
 
+router.put('/:id/market-review', controllers.PutMarketReview)
+router.get('/:id/market-review', controllers.GetMarketReview)
 router.get('/:id/market-bookmark', controllers.GetMarketBookmark)
 router.get('/:id/market-history', controllers.GetMarketHistory)
 router.get('/', controllers.GetVisitors)

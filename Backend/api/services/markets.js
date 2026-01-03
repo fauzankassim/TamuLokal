@@ -1,6 +1,28 @@
 const { supabase } = require('../../db')
 
 
+const getMarketStatistic = async (market_id) => {
+  const { data, error } = await supabase
+    .rpc("get_market_statistic", {
+      p_market_id: market_id
+    })
+    .single();
+
+  return data;
+}
+const postMarketReview = async (market_id, visitor_id, rating, review) => {
+  const { data, error } = await supabase
+    .from("market_review")
+    .insert({
+      market_id,
+      visitor_id,
+      review,
+      rating
+    });
+
+  return data;
+}
+
 const getMarketspace = async (market_id) => {
   const { data, error } = await supabase
     .rpc("get_marketspace_as_organizer", 
@@ -231,6 +253,7 @@ const getMarketSpaceById = async (id) => {
 const getMarketReview = async(id) => {
   const { data, error } = await supabase.rpc("get_market_reviews",{ p_market_id: id});
 
+  console.log(error);
   return data;
 }
 
@@ -263,6 +286,8 @@ const postMarketVisitor = async (visitor_id, market_id) => {
 }
 
 module.exports = {
+  getMarketStatistic,
+  postMarketReview,
   getMarketspace,
   putMarket,
   deleteMarketSchedule,

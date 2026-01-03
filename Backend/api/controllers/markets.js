@@ -1,4 +1,25 @@
-const { getMarketspace, putMarket, deleteMarketSchedule, getMarketSchedule, postMarketSchedule, postMarketVisitor, getMarketVendors, getMarketRatings, getMarketReview, getMarketSpaceById, deleteMarketBookmarkById, postMarketBookmarkById, getMarketBookmarkById, deleteMarketLikeById, postMarketLikeById, getMarketLikeById, getMarkets, getMarketById, postMarket } = require('../services/markets')
+const { getMarketStatistic, postMarketReview, getMarketspace, putMarket, deleteMarketSchedule, getMarketSchedule, postMarketSchedule, postMarketVisitor, getMarketVendors, getMarketRatings, getMarketReview, getMarketSpaceById, deleteMarketBookmarkById, postMarketBookmarkById, getMarketBookmarkById, deleteMarketLikeById, postMarketLikeById, getMarketLikeById, getMarkets, getMarketById, postMarket } = require('../services/markets')
+
+const GetMarketStatistic = async (req, res) => {
+  try {
+    const { id: market_id } = req.params;
+    const statistic = await getMarketStatistic(market_id);
+    res.status(200).json(statistic);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+const PostMarketReview = async (req, res) => {
+  try {
+    const { id: market_id } = req.params;
+    const { visitor_id, rating, review } = req.body;
+    const data = await postMarketReview(market_id, visitor_id, rating, review);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
 
 const GetMarketspace = async (req, res) => {
     try {
@@ -229,6 +250,8 @@ const DeleteMarketBookmarkById = async (req, res) => {
 
 
 module.exports = {
+  GetMarketStatistic,
+  PostMarketReview,
   GetMarketspace,
   PutMarket,
   DeleteMarketSchedule,

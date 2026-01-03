@@ -1,8 +1,14 @@
 const { supabase } = require('../../db')
 
+const getStatistic = async (vendor_id) => {
+  const { data, error } = await supabase.rpc("get_vendor_statistic", {p_vendor_id: vendor_id}).single();
+
+  return data;
+}
+
 const getMarketspaceApplication = async (vendor_id) => {
   const { data, error } = await supabase.rpc("get_marketspace_application_as_vendor", { p_vendor_id: vendor_id});
-  
+
 
     console.log(error);
   return data;
@@ -149,6 +155,7 @@ const deleteVendorById = async (id) => {
 
 
 module.exports = {
+  getStatistic,
     getMarketspaceApplication,
     putVendorImageById,
     putVendorProfileById,

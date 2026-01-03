@@ -1,3 +1,4 @@
+import { TbGridDots, TbTicket, TbPackage, TbBuildingStore } from "react-icons/tb";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
@@ -5,8 +6,8 @@ import ProfileInformation from "../components/ProfileInformation";
 import ProductList from "../components/ProductList";
 import ProfileHamburger from "../components/ProfileHamburger";
 import MarketVisitList from "../components/MarketVisitList";
-import { TbChevronLeft } from "react-icons/tb";
 import OrganizerMarketList from "../components/OrganizerMarketList";
+import { TbChevronLeft } from "react-icons/tb";
 
 const ProfilePage = () => {
   const session = useAuth(true);
@@ -14,6 +15,7 @@ const ProfilePage = () => {
   const { id } = useParams();
   const location = useLocation();
   const [roles, setRoles] = useState([]);
+  const [activeTab, setActiveTab] = useState("main"); // "main" is default
 
   const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
@@ -35,24 +37,30 @@ const ProfilePage = () => {
 
   if (!session) return null;
 
-  // ✅ Detect role from pathname
+  // Detect role from pathname
   const path = location.pathname;
   const roleMatch = path.match(/\/(vendor|visitor|organizer)\//);
   let role = roleMatch ? roleMatch[1] : null;
 
-  // ✅ If on /profile, use role from fetched roles
+  // If on /profile, use role from fetched roles
   if (path === "/profile") {
     if (roles.includes("Vendor")) role = "vendor";
     else if (roles.includes("Organizer")) role = "organizer";
     else role = "visitor";
   }
 
-  const isOwnProfile =
-    path === "/profile" || (!id ? true : id === session.user.id);
+  const isOwnProfile = path === "/profile" || (!id ? true : id === session.user.id);
 
   const handleBack = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate("/");
+  };
+
+  // Tab icons depending on role
+  const roleTabIcon = {
+    visitor: { icon: TbTicket, key: "visited" },
+    vendor: { icon: TbPackage, key: "products" },
+    organizer: { icon: TbBuildingStore, key: "markets" },
   };
 
   return (
@@ -81,42 +89,50 @@ const ProfilePage = () => {
           isOwnProfile={isOwnProfile}
         />
 
-        <hr className="my-6 border-gray-200" />
+        <hr className="mt-6 border-gray-200" />
 
-        {/* 👇 Visitor view */}
-        {role === "visitor" && (
-          <>
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-              Visited Markets
-            </h2>
-            <MarketVisitList visitorId={id || session.user.id} />
-          </>
+        {/* ===== Tab Bar ===== */}
+        <div className="flex justify-around mb-4 border-b border-gray-200 py-2">
+          {/* Main Tab */}
+          <button
+            onClick={() => setActiveTab("main")}
+            className={`flex-1 flex justify-center py-2 ${
+              activeTab === "main" ? "text-orange-500" : "text-gray-400"
+            }`}
+          >
+            <TbGridDots size={24} />
+          </button>
+
+          {/* Role-specific Tab */}
+          {role && roleTabIcon[role] && (
+            <button
+              onClick={() => setActiveTab(roleTabIcon[role].key)}
+              className={`flex-1 flex justify-center py-2 ${
+                activeTab === roleTabIcon[role].key ? "text-orange-500" : "text-gray-400"
+              }`}
+            >
+              {React.createElement(roleTabIcon[role].icon, { size: 24 })}
+            </button>
+          )}
+        </div>
+
+        {/* ===== Tab Content ===== */}
+        {activeTab === "main" && (
+          <p className="text-gray-500 text-center text-sm mb-4">
+            Main profile content displayed above tabs
+          </p>
         )}
 
-        {/* 👇 Vendor view */}
-        {role === "vendor" && (
-          <>
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-              Vendor Products
-            </h2>
-            <ProductList
-              vendorId={id || session.user.id}
-              isOwnProfile={isOwnProfile}
-            />
-          </>
+        {role === "visitor" && activeTab === "visited" && (
+          <MarketVisitList visitorId={id || session.user.id} />
         )}
 
-        {/* 👇 Organizer view */}
-        {role === "organizer" && (
-          <>
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-              Markets Owned
-            </h2>
-            <OrganizerMarketList organizerId={id || session.user.id} />
+        {role === "vendor" && activeTab === "products" && (
+          <ProductList vendorId={id || session.user.id} isOwnProfile={isOwnProfile} />
+        )}
 
-            {/* OrganizerMarketList will show here if needed */}
-            {/* Import it only when you want organizer listing */}
-          </>
+        {role === "organizer" && activeTab === "markets" && (
+          <OrganizerMarketList organizerId={id || session.user.id} />
         )}
       </div>
     </div>

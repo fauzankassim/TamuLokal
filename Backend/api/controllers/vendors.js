@@ -1,4 +1,14 @@
-const {   getMarketspaceApplication, getVendorsByCategoryId, getVendorProfileById, getVendors, getVendorById, postVendor, putVendor, deleteVendorById, putVendorById, putVendorImageById, putVendorProfileById } = require('../services/vendors')
+const {   getStatistic, getMarketspaceApplication, getVendorsByCategoryId, getVendorProfileById, getVendors, getVendorById, postVendor, putVendor, deleteVendorById, putVendorById, putVendorImageById, putVendorProfileById } = require('../services/vendors')
+
+const GetStatistic = async (req, res) => {
+    try {
+        const { id: vendor_id } = req.params;
+        const statistic = await getStatistic(vendor_id);
+        res.status(200).json(statistic);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
 
 const GetMarketspaceApplication = async (req, res) => {
     try {
@@ -102,6 +112,7 @@ const DeleteVendorById = async (req, res) => {
 
 
 module.exports = {
+    GetStatistic,
     GetMarketspaceApplication,
     PutVendorProfileById,
     PutVendorImageById,

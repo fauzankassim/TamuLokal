@@ -1,10 +1,35 @@
 const { supabase } = require('../../db')
 
+
+const putMarketReview = async (review_id, rating, review) => {
+    const { data, error } = await supabase
+        .from("market_review")
+        .update({
+            rating,
+            review
+        })
+        .eq("id", review_id)
+        .select()
+        .single();
+
+    return data;
+}
+const getMarketReview = async (visitor_id, review_id) => {
+    const { data, error } = await supabase
+        .from("market_review")
+        .select("*")
+        .eq("visitor_id", visitor_id)
+        .eq("id", review_id)
+        .single();
+
+    return data;
+}
+
 const getMarketBookmark = async (visitor_id) => {
     const { data, error } = await supabase
-        .from("market_bookmark")
-        .select("*")
-        .eq("visitor_id", visitor_id);
+        .rpc("get_market_bookmark_as_visitor", {
+            p_visitor_id: visitor_id
+        });
 
     return data;
 }
@@ -88,6 +113,8 @@ const getVisitorVisitedMarket = async (id) => {
 }
 
 module.exports = {
+    putMarketReview,
+    getMarketReview,
     getMarketBookmark,
     getMarketHistory,
     getVisitorVisitedMarket,
