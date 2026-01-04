@@ -3,10 +3,12 @@ import MapDisplay from "../components/MapDisplay";
 import MapMarketList from "../components/MapMarketList";
 import useCurrentLocation from "../hooks/useCurrentLocation";
 import useMarket from "../hooks/useMarket";
+import Spinner from "../components/Spinner";
+import { getDistanceMeters } from "../utils/calculateMarketDistance";
 
 const MapPage = () => {
   const location = useCurrentLocation();
-  const { markets: fetchedMarkets } = useMarket(null, location);
+  const { markets: fetchedMarkets, loading } = useMarket(null, location);
 
   const [markets, setMarkets] = useState([]);
   const [selectedMarketId, setSelectedMarketId] = useState(null);
@@ -24,11 +26,17 @@ const MapPage = () => {
     setMarkets(fetchedMarkets || []);
   }, [fetchedMarkets]);
 
-  console.log(markets);
-  // ✅ Filter BEFORE passing to map
+  // ✅ Filter BEFORE passing to map with live distance calculation
   const filteredMarkets = useMemo(() => {
-    return markets.filter((m) => m.distance_meters <= distance);
-  }, [markets, distance]);
+    if (!location) return [];
+
+    return markets
+      .map((m) => ({
+        ...m,
+        distance_meters: getDistanceMeters(location[0], location[1], m.latitude, m.longitude),
+      }))
+      .filter((m) => m.distance_meters <= distance);
+  }, [markets, location, distance]);
 
   const markers = useMemo(() => {
     return filteredMarkets.map((m) => ({
@@ -75,6 +83,8 @@ const MapPage = () => {
     }
   };
 
+  if (loading) return <Spinner loading />;
+
   return (
     <>
       <div className="relative h-screen w-screen z-0">
@@ -84,10 +94,8 @@ const MapPage = () => {
           markers={markers}
           center={center}
           routeTo={routeTo}
-          routeZoom={15}
           onMarkerClick={handleMarkerClick}
           onClose={handleCloseMarketList}
-          showCloseButton={showList}
           distance={distance}
           onRouteFound={handleRouteInstruction} // ✅ only updates if instruction differs
         />
@@ -102,32 +110,32 @@ const MapPage = () => {
           onGetDirection={handleGetDirection}
         />
       )}
-{/* ✅ Instruction / Radius Slider UI */}
-<div
-  className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-white px-4 py-2 rounded-xl shadow-md flex flex-col items-center justify-center"
-  style={{ width: "220px", height: "52px" }} // fixed size
->
-  {routeTo && firstStep ? (
-    // Instruction text styled same as radius text
-    <span className="text-sm font-medium text-center break-words">
-      {firstStep.instruction}
-    </span>
-  ) : (
-    <>
-      <span className="text-sm font-medium text-center">Radius: {distance / 1000} km</span>
-      <input
-        type="range"
-        min={5000}
-        max={20000}
-        step={5000}
-        value={distance}
-        className="w-48 mt-1 cursor-pointer"
-        onChange={(e) => setDistance(Number(e.target.value))}
-      />
-    </>
-  )}
-</div>
 
+      {/* ✅ Instruction / Radius Slider UI */}
+      <div
+        className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-white px-4 py-2 rounded-xl shadow-md flex flex-col items-center justify-center"
+        style={{ width: "220px", height: "52px" }} // fixed size
+      >
+        {routeTo && firstStep ? (
+          // Instruction text styled same as radius text
+          <span className="text-sm font-medium text-center break-words">
+            {firstStep.instruction}
+          </span>
+        ) : (
+          <>
+            <span className="text-sm font-medium text-center">Radius: {distance / 1000} km</span>
+            <input
+              type="range"
+              min={5000}
+              max={20000}
+              step={5000}
+              value={distance}
+              className="w-48 mt-1 cursor-pointer"
+              onChange={(e) => setDistance(Number(e.target.value))}
+            />
+          </>
+        )}
+      </div>
     </>
   );
 };

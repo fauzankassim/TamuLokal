@@ -4,7 +4,6 @@ const { supabase } = require('../../db')
 const getContentEngagement = async (content_id) => {
     const { data, error } = await supabase.rpc("get_content_engagement", {p_content_id: content_id}).single();
 
-    console.log(data);
     return data;
 }
 
@@ -14,7 +13,6 @@ const postContentCommentReply = async (reply) => {
         .insert([reply])
         .select();
 
-    console.log(error);
     return data;
 }
 const postContentComment = async (comment) => {
@@ -69,7 +67,6 @@ const getAllPosts = async () => {
 const getFriendPosts = async (id) => {
     const { data, error } = await supabase.rpc("get_following_content", { p_follower_id: id });
 
-    console.log(error);
 
     return data;
 }

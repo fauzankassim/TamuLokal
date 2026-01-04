@@ -13,7 +13,6 @@ const DeleteUserFollow = async (req, res) => {
 const GetUserFollow = async (req, res) => {
     try { 
         const { follower_id, following_id } = req.query;
-        console.log(follower_id);
         const account = await getUserFollow(follower_id, following_id);
         res.status(200).json(account);
     } catch (error) {

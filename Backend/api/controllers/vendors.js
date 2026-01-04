@@ -13,7 +13,6 @@ const GetStatistic = async (req, res) => {
 const GetMarketspaceApplication = async (req, res) => {
     try {
         const { id: vendor_id } = req.params;
-        console.log(vendor_id);
         const applications = await getMarketspaceApplication(vendor_id);
         res.status(200).json(applications);
     } catch (error) {

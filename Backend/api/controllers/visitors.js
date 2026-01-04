@@ -1,4 +1,15 @@
-const {  putMarketReview, getMarketReview, getMarketBookmark, getMarketHistory, getVisitorVisitedMarket, getVisitors, getVisitorProfileById, postVisitor, putVisitor, deleteVisitorById, putVisitorById, putVisitorImageById } = require('../services/visitors')
+const {  getContent, putMarketReview, getMarketReview, getMarketBookmark, getMarketHistory, getVisitorVisitedMarket, getVisitors, getVisitorProfileById, postVisitor, putVisitor, deleteVisitorById, putVisitorById, putVisitorImageById } = require('../services/visitors')
+
+const GetContent = async (req, res) => {
+    try {
+        const { id: visitor_id } = req.params;
+        const contents = await getContent(visitor_id);
+
+        res.status(200).json(contents);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
 
 const PutMarketReview = async (req, res) => {
     try {
@@ -90,7 +101,6 @@ const PutVisitorById = async (req, res) => {
         const id = req.params.id;
         const updates = req.body;
         const visitor = await putVisitorById(id, updates);
-        console.log(visitor);
         res.status(200).json(visitor);
     }
     catch (err) {
@@ -121,6 +131,7 @@ const GetVisitorVisitedMarket = async (req, res) => {
 
 
 module.exports = {
+    GetContent,
     PutMarketReview,
     GetMarketReview,
     GetMarketBookmark,

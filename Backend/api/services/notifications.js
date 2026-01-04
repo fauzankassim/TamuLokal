@@ -6,7 +6,7 @@ const getNotification = async (recipient_id) => {
         .select("*")
         .eq('recipient_id', recipient_id);
 
-    console.log(error);
+
     return data;
 }
 
@@ -18,7 +18,7 @@ const putNotificationIsRead = async (id) => {
         .select()
         .single();
 
-    console.log(error);
+
     return data;
 }
 

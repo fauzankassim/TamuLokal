@@ -8,7 +8,7 @@ const MarketVisitList = ({ visitorId }) => {
   useEffect(() => {
     const fetchVisitedMarkets = async () => {
       try {
-        const res = await fetch(`${base_url}/visitor/${visitorId}/market`);
+        const res = await fetch(`${base_url}/visitor/${visitorId}/market-history`);
         const data = await res.json();
         console.log(data);
         setMarkets(data || []);
@@ -22,6 +22,8 @@ const MarketVisitList = ({ visitorId }) => {
     fetchVisitedMarkets();
   }, [visitorId]);
 
+  console.log(markets);
+
   if (loading) {
     return <p className="text-center text-gray-500">Loading markets...</p>;
   }
@@ -31,13 +33,13 @@ const MarketVisitList = ({ visitorId }) => {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 p-4">
+    <div className="grid grid-cols-2 gap-2">
       {markets.map((market) => (
-        <div key={market.id} className="w-full">
+        <div key={market.market_id} className="w-full aspect-square overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer">
           <img
-            src={market.image}
-            alt={market.name}
-            className="w-full h-32 object-cover rounded-xl shadow-sm"
+            src={market.market_image}
+            alt={market.market_name}
+            className="w-full h-full object-cover"
           />
         </div>
       ))}

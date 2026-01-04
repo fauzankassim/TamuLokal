@@ -155,7 +155,7 @@ const CommunityContentCard = ({ content, type }) => {
   }, [userId, content.content_id]);
 
   return (
-    <div className="bg-white shadow-sm hover:shadow-md transition">
+    <div className="bg-[var(--white)] shadow-sm hover:shadow-md transition">
       {/* Visitor info + Follow button */}
       <div className="flex items-center justify-between px-4 py-3 gap-3">
         <div className="flex items-center gap-3">
@@ -170,11 +170,11 @@ const CommunityContentCard = ({ content, type }) => {
             />
 
             <div className="flex flex-col">
-              <span className="font-semibold text-gray-800 hover:underline">
+              <span className="font-semibold text-[var(--black)] hover:underline">
                 {content.visitor_username}
               </span>
 
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-[var(--gray)]">
                 {formatDate(content.created_at)}
               </span>
             </div>
@@ -186,8 +186,8 @@ const CommunityContentCard = ({ content, type }) => {
           onClick={handleFollowToggle}
           className={`w-30 text-center px-3 py-1 text-sm font-medium rounded-full border transition ${
             isFollowing
-              ? "border-gray-400 text-gray-600 bg-gray-100 hover:bg-gray-200"
-              : "border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+              ? "border-[var(--orange)] text-[var(--white)] bg-[var(--orange)] hover:bg-[var(--white)] hover:text-[var(--orange)]"
+              : "border-[var(--orange)] text-[var(--orange)] hover:bg-[var(--orange)] hover:text-[var(--white)]"
           }`}
         >
           {isFollowing ? "Following" : "Follow"}
@@ -205,28 +205,28 @@ const CommunityContentCard = ({ content, type }) => {
 
       {/* Title & caption */}
       <div className="px-4 py-3">
-        <div className="mb-2 text-sm text-gray-500">
+        <div className="mb-2 text-sm">
           <NavLink
             to={`/market/${content.market_id}`}
-            className="font-medium text-orange-500 hover:underline"
+            className="font-medium text-[var(--orange)] hover:underline"
           >
             {content.market_name}
           </NavLink>
         </div>
-        <p className="text-gray-600 text-sm mt-1">{content.caption}</p>
+        <p className="text-[var(--black)] text-sm mt-1">{content.caption}</p>
 
         {/* Engagement counts */}
-        <div className="mt-2 text-xs text-gray-500 flex gap-4">
+        <div className="mt-2 text-xs text-[var(--gray)] flex gap-4">
           <span>{engagement.total_likes} Likes</span>
           <span>{engagement.total_comments} Comments</span>
         </div>
       </div>
 
       {/* Action buttons */}
-      <div className="px-4 py-2 border-t border-gray-200 flex justify-around text-gray-600 text-sm">
+      <div className="px-4 py-2 border-t border-gray-200 flex justify-around text-[var(--black)] text-sm">
         <button
           onClick={handleLikeToggle}
-          className="flex items-center gap-1 transition"
+          className="flex items-center gap-1  hover:text-[var(--orange)] transition"
         >
           {isLiked ? (
             <TbHeartFilled className="text-lg text-red-500" />
@@ -237,12 +237,12 @@ const CommunityContentCard = ({ content, type }) => {
         </button>
         <button
           onClick={() => setShowComments(true)}
-          className="flex items-center gap-1 hover:text-orange-500 transition"
+          className="flex items-center gap-1 hover:text-[var(--orange)] transition"
         >
           <TbMessageCircle className="text-lg" /> Comment
         </button>
 
-        <button className="flex items-center gap-1 hover:text-orange-500 transition">
+        <button className="flex items-center gap-1 hover:text-[var(--orange)] transition">
           <TbShare2 className="text-lg" /> Share
         </button>
       </div>

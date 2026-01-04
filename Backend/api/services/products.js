@@ -51,7 +51,6 @@ const putProductImageById = async (id, image) => {
         .eq('id', id)
         .select();
 
-    console.log(error);
     return data;
 }
 

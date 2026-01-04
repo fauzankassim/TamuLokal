@@ -8,7 +8,6 @@ const getMarketOwnershipByOrganizerId = async (organizer_id) => {
     }
   );
 
-  console.log(data);
   return data; 
 }
 

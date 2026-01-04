@@ -7,7 +7,6 @@ const deleteUserFollow = async (follower_id, following_id) => {
         .eq("follower_id", follower_id)
         .eq("following_id", following_id);
 
-    console.log(data);
 }
 
 const getUserFollow = async (follower_id, following_id) => {

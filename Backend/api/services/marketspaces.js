@@ -11,7 +11,6 @@ const postMarketspaceApplication = async (space_id, vendor_id, image) => {
     .select()
     .single();
 
-    console.log(error);
   return data;
 }
 
@@ -76,7 +75,6 @@ const putMarketspaceState = async (space_id, state) => {
     .select()
     .single();
 
-  console.log(error);
   return data;
 }
 

@@ -4,14 +4,28 @@ const LocationContext = createContext();
 
 export function LocationProvider({ children }) {
   const [location, setLocation] = useState(null);
+  const [loading, setLoading] = useState(true); // ✅ ADD THIS
 
-    useEffect(() => {
-    if (location) {
-      console.log("[Global LocationContext] location updated:", location);
-    }
-  }, [location]);
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
+        setLocation(loc);
+        setLoading(false);
+        console.log("[Global LocationContext] location set:", loc);
+      },
+      (err) => {
+        console.error("[Global LocationContext] location error:", err);
+        setLoading(false); // still stop loading
+      }
+    );
+  }, []);
+
   return (
-    <LocationContext.Provider value={{ location, setLocation }}>
+    <LocationContext.Provider value={{ location, loading, setLocation }}>
       {children}
     </LocationContext.Provider>
   );

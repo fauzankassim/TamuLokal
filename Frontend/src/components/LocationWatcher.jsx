@@ -1,25 +1,14 @@
 import { useEffect, useState } from "react";
-import { useLocationData } from "../context/LocationContext";
 import { useLocation } from "react-router-dom";
-import useMarket from "../hooks/useMarket";
+
 import MarketCheckinPopup from "./MarketCheckinPopup";
+
+import { useLocationData } from "../context/LocationContext";
+import useMarket from "../hooks/useMarket";
 import { useAuth } from "../hooks/useAuth";
 
-// ⭐ Haversine distance in meters
-function getDistanceMeters(lat1, lng1, lat2, lng2) {
-  const R = 6371000; // earth radius in meters
-  const toRad = x => (x * Math.PI) / 180;
-
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
+// ✅ Import reusable distance util
+import { getDistanceMeters } from "../utils/calculateMarketDistance";
 
 // ⭐ Helper to check same day
 function isSameDay(date1, date2) {
@@ -46,14 +35,14 @@ export default function LocationWatcher() {
 
     navigator.geolocation.getCurrentPosition(pos => {
       const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      console.log("[LocationWatcher] initial global location:", coords);
+      //console.log("[LocationWatcher] initial global location:", coords);
       setLocation(coords);
     });
 
     const interval = setInterval(() => {
       navigator.geolocation.getCurrentPosition(pos => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        console.log("[LocationWatcher] updating global location:", coords);
+        //console.log("[LocationWatcher] updating global location:", coords);
         setLocation(coords);
       });
     }, 60000);
@@ -77,23 +66,15 @@ export default function LocationWatcher() {
           market.longitude
         );
 
-        console.log(`[LocationWatcher] Distance to ${market.name}: ${dist}m`);
+        //console.log(`[LocationWatcher] Distance to ${market.name}: ${dist}m`);
 
         if (dist <= RADIUS) {
           // ⭐ LocalStorage: skip if already checked in today
           const lastCheckin = localStorage.getItem(`checkin_${market.id}`);
           if (lastCheckin && isSameDay(lastCheckin, new Date())) {
-            console.log(
-              `%c⛔ Already checked in today for ${market.name}. Skipping.`,
-              "color: orange; font-weight: bold;"
-            );
-            continue; // skip only this market
-          }
 
-          console.log(
-            `%c🔥 User is inside ${market.name} (${dist}m) - Checking in...`,
-            "color: green; font-weight: bold;"
-          );
+            continue;
+          }
 
           // ⭐ POST to /market/:id/visit
           try {
@@ -107,7 +88,7 @@ export default function LocationWatcher() {
             );
 
             const data = await res.json();
-            console.log("[CheckIn] Response:", data);
+            //console.log("[CheckIn] Response:", data);
 
             const createdAt = data?.created_at;
 

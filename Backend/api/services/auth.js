@@ -12,10 +12,12 @@ const signupWithEmail = async(user) => {
     });
 
     const visitor = data.user;
-    console.log(visitor);
+
+    
     // Step 2: Create folder in storage
     const folderPath = `visitors/${visitor.id}/`;
-    console.log(folderPath);
+
+    
 
     // Supabase doesn’t allow empty folders — we upload a dummy file to "create" it
     const { error: uploadError } = await supabase.storage
@@ -24,7 +26,8 @@ const signupWithEmail = async(user) => {
             upsert: false,
         });
 
-    console.log(error);
+   
+        
     if (uploadError && uploadError.message !== 'The resource already exists') {
         throw uploadError;
     }
@@ -55,7 +58,6 @@ const signinWithEmail = async (user) => {
         password: user.password,
     });
 
-    console.log(data.session)
     return data;
 }
 

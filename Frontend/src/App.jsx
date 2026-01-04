@@ -18,7 +18,6 @@ import MarketListPage from './pages/MarketListPage';
 import CategoryPage from './pages/CategoryPage';
 import BusinessMarketSpacePage from './pages/BusinessMarketSpacePage';
 import AdminPage from './pages/AdminPage';
-import BusinessMarketPropertyPage from './pages/BusinessMarketPropertyPage';
 import { LocationProvider } from './context/LocationContext';
 
 import NotificationPage from './pages/NotificationPage';
@@ -48,6 +47,10 @@ const router = createBrowserRouter(
         <Route path='/community' element={<CommunityPage />}/>
 
       </Route>
+
+      <Route path='/category/:id' element={<CategoryPage />} />
+
+      
       <Route path='/notifications' element={<NotificationPage />}/>
 
   
@@ -67,7 +70,7 @@ const router = createBrowserRouter(
       <Route path='/business/product/:id/edit' element={<ProductActionPage />}/>
 
 
-      <Route path='/category/:id' element={<CategoryPage />} />
+  
       <Route path='/business/registration' element={<BusinessRegistrationPage />}/>
       <Route path='/auth' element={<AuthPage />}/>
       <Route path='/market-review/:review_id' element={<MarketReviewActionPage />}/>
@@ -88,7 +91,6 @@ const router = createBrowserRouter(
       <Route path='/business/market/:id/edit' element={<MarketActionPage />}/>
       <Route path='/business/market/:id/plan' element={<MarketFloorPlanPage />}/>
       <Route path='/business/market/:id/space' element={<MarketSpacePage />}/>
-      <Route path='/business/market/:id/property' element={<BusinessMarketPropertyPage />}/>
       <Route path='/business/market/:market_id/review' element={<BusinessMarketReviewPage />}/>
       <Route path='/business/market/:market_id/statistic' element={<BusinessMarketStatisticPage />}/>
     </Route>

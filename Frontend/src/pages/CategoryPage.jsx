@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useParams, NavLink } from "react-router-dom";
-import { TbChevronLeft } from "react-icons/tb";
+import { useParams } from "react-router-dom";
 import CategoryVendorCard from "../components/CategoryVendorCard";
+import Header from "../components/Header";
+import Spinner from "../components/Spinner";
+
 const categories = [
   { id: 1, name: "Fresh Produce", emoji: "🍅" },
   { id: 2, name: "Street Food", emoji: "🍢" },
@@ -17,8 +19,7 @@ const CategoryPage = () => {
   const { id } = useParams(); // category ID
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-const category = categories.find((cat) => cat.id === Number(id));
+  const category = categories.find((cat) => cat.id === Number(id));
   const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
   useEffect(() => {
@@ -27,7 +28,6 @@ const category = categories.find((cat) => cat.id === Number(id));
     const fetchVendors = async () => {
       try {
         setLoading(true);
-        setError(null);
 
         const res = await fetch(`${base_url}/category/${id}`);
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
@@ -36,7 +36,6 @@ const category = categories.find((cat) => cat.id === Number(id));
         setVendors(data);
       } catch (err) {
         console.error("Error fetching vendors:", err);
-        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -45,41 +44,27 @@ const category = categories.find((cat) => cat.id === Number(id));
     fetchVendors();
   }, [id, base_url]);
 
-
+  if (loading) return <Spinner loading={loading} />
   return (
-    <div className="relative bg-[var(--white)] h-screen overflow-y-auto p-4">
-      <div className="max-w-xl w-full mx-auto flex flex-col gap-4">
-        {/* Header — always visible */}
-        <div className="flex items-center gap-3 mb-6">
-          <NavLink
-            to="/"
-            className="text-gray-700 hover:text-orange-500 transition"
-          >
-            <TbChevronLeft className="text-2xl" />
-          </NavLink>
-          <h1 className="text-xl font-semibold text-gray-800">
-            {category ? `${category.name}` : "Category"}
-          </h1>
-        </div>
+    <div className="w-screen h-full flex flex-col relative">
 
-        {/* Content */}
-        {loading ? (
-          <p className="text-center mt-4">Loading...</p>
-        ) : error ? (
-          <p className="text-center mt-4 text-red-500">{error}</p>
-        ) : vendors.length === 0 ? (
-          <p className="text-center mt-4">No vendors found in this category</p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {vendors.map((vendor) => (
-              <CategoryVendorCard key={vendor.vendor_id} vendor={vendor} />
-            ))}
-          </div>
-        )}
-      </div>
+      <Header title={category ? `${category.name}` : "Category"} backPath="/" />
+
+      {/* No vendors message */}
+      {vendors.length === 0 && (
+        <p className="text-center mt-4 text-[var(--gray)]">No vendors found</p>
+      )}
+
+      {/* Vendor grid */}
+      {vendors.length > 0 && (
+        <div className="w-full p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {vendors.map((vendor) => (
+            <CategoryVendorCard key={vendor.vendor_id} vendor={vendor} />
+          ))}
+        </div>
+      )}
     </div>
   );
-
 };
 
 export default CategoryPage;

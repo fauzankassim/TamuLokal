@@ -26,7 +26,6 @@ const GetUser = async (req, res) => {
         const token = authHeader.split(' ')[1];
 
         const user = await getUser(token);
-        console.log(user);
         res.status(200).json(user);
     } catch (error) {
         res.status(500).send(error);

@@ -138,7 +138,6 @@ const GetMarketSpaceById = async (req, res) => {
 const GetMarketById = async (req, res) => {
     try {
         const id = req.params.id;
-        console.log(id);
         const market = await getMarketById(id);
         res.status(200).json(market);
     }

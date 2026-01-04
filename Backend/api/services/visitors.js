@@ -1,6 +1,14 @@
 const { supabase } = require('../../db')
 
 
+const getContent = async (visitor_id) => {
+    const {data, error } = await supabase
+        .from("content")
+        .select("*")
+        .eq("visitor_id", visitor_id);
+
+    return data;
+}
 const putMarketReview = async (review_id, rating, review) => {
     const { data, error } = await supabase
         .from("market_review")
@@ -99,7 +107,6 @@ const deleteVisitorById = async (id) => {
         .delete()
         .eq('id', id)
 
-    console.log(error);
 }
 
 
@@ -107,12 +114,11 @@ const getVisitorVisitedMarket = async (id) => {
 
     const { data, error } = await supabase.rpc("get_visited_markets", {p_visitor_id: id});
 
-    console.log(data);
-
     return data;
 }
 
 module.exports = {
+    getContent,
     putMarketReview,
     getMarketReview,
     getMarketBookmark,

@@ -54,7 +54,6 @@ const postMarketSchedule = async (market_id, schedules) => {
     .insert(schedules)
     .select()
 
-    console.log(error);
   return data;
 }
 
@@ -66,7 +65,7 @@ const getMarkets = async (user_latitude = null, user_longitude = null, limit = n
       })
       .limit(limit);
     
-    console.log(data);
+
     if (error) throw error;
     return data;
 };
@@ -253,7 +252,6 @@ const getMarketSpaceById = async (id) => {
 const getMarketReview = async(id) => {
   const { data, error } = await supabase.rpc("get_market_reviews",{ p_market_id: id});
 
-  console.log(error);
   return data;
 }
 
@@ -266,14 +264,14 @@ const getMarketRatings = async(id) => {
 
 const getMarketVendors = async (id) => {
   const { data, error } = await supabase.rpc("get_market_vendors", { p_market_id: id});
-  console.log(data);
+
 
   return data;
 }
 
 const postMarketVisitor = async (visitor_id, market_id) => {
   const { data, error } = await supabase
-    .from("market_visit")
+    .from("market_history")
     .insert([{
       visitor_id,
       market_id
@@ -281,7 +279,7 @@ const postMarketVisitor = async (visitor_id, market_id) => {
     .select()
     .single();
 
-    console.log(error);
+
   return data;
 }
 

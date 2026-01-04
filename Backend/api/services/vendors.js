@@ -9,8 +9,6 @@ const getStatistic = async (vendor_id) => {
 const getMarketspaceApplication = async (vendor_id) => {
   const { data, error } = await supabase.rpc("get_marketspace_application_as_vendor", { p_vendor_id: vendor_id});
 
-
-    console.log(error);
   return data;
 }
 
@@ -140,7 +138,6 @@ const putVendorById = async (id, updates) => {
         .select()
         .single();
 
-        console.log(error);
     return data;
 }
 
@@ -149,8 +146,6 @@ const deleteVendorById = async (id) => {
         .from('vendor')
         .delete()
         .eq('id', id)
-
-    console.log(error);
 }
 
 
