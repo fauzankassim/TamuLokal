@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaGoogle, FaApple } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 import { TbEye, TbEyeClosed } from "react-icons/tb"
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
@@ -134,24 +134,6 @@ const SigninForm = () => {
         >
           <FaGoogle className="text-[#DB4437]" />
           Continue with Google
-        </button>
-
-        {/* Apple Button */}
-        <button
-          type="button"
-          className="w-full h-[40px] rounded-xl border border-gray-300 
-                     flex items-center justify-center gap-2 text-sm font-medium 
-                     hover:bg-gray-50 transition-colors"
-          onClick={async () => {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-              provider: "apple",
-            });
-            if (error) console.error(error);
-            console.log(data);
-          }}
-        >
-          <FaApple className="text-black" />
-          Continue with Apple
         </button>
       </form>
     </div>

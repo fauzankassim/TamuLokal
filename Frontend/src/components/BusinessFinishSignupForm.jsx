@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 
-const BusinessFinishSignupForm = ({ onChange }) => {
+const BusinessFinishSignupForm = ({ onChange, user_id }) => {
+  const [data, setData] = useState(null);
   const [formData, setFormData] = useState({
     profilePicture: null,
     username: "",
@@ -26,6 +28,34 @@ const BusinessFinishSignupForm = ({ onChange }) => {
     if (onChange) onChange(updatedData);
   };
 
+  useEffect(() => {
+  if (!user_id) return;
+
+  const fetchVisitor = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/visitor/${user_id}`
+      );
+
+      const data = await response.json();
+      setData(data);
+
+      const updatedFormData = {
+        profilePicture: data.image || null,
+        username: data.username || "",
+      };
+
+      setFormData(updatedFormData);
+      if (onChange) onChange(updatedFormData);
+
+    } catch (error) {
+      console.error("❌ Failed to fetch visitor:", error);
+    }
+  };
+
+  fetchVisitor();
+}, [user_id]);
+
   return (
     <div className="flex flex-col items-center font-inter w-full">
       <div className="flex flex-col gap-4 w-[300px]">
@@ -36,7 +66,7 @@ const BusinessFinishSignupForm = ({ onChange }) => {
           <div className="w-24 h-24 rounded-full bg-gray-100 mb-6 flex items-center justify-center overflow-hidden">
             {formData.profilePicture ? (
               <img
-                src={URL.createObjectURL(formData.profilePicture)}
+                src={data.image}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />

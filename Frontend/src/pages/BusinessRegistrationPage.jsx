@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import BusinessIdentificationSignupForm from "../components/BusinessIdentificationSignupForm";
 import BusinessVerificationSignupForm from "../components/BusinessVerificationSignupForm";
@@ -9,6 +9,8 @@ import { supabase } from "../supabaseClient";
 const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
 const BusinessRegistrationPage = () => {
+
+  const { role } = useParams();
   const session = useAuth(true);
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -17,7 +19,25 @@ const BusinessRegistrationPage = () => {
   const [finishData, setFinishData] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const handleNext = () => setStep((prev) => Math.min(prev + 1, 3));
+  const isIdentificationComplete =
+  identificationData.fullName?.trim() &&
+  identificationData.nric?.trim() &&
+  identificationData.businessName?.trim() &&
+  identificationData.businessLicense?.trim();
+
+  const isVerificationComplete =
+  verificationData.icFront &&
+  verificationData.icBack &&
+  verificationData.businessLicenseFile;
+
+  const isFinishComplete =
+  finishData.username?.trim();
+
+
+  
+const handleNext = () => setStep((prev) => Math.min(prev + 1, 3));
+
+
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const handleSubmit = async () => {
@@ -180,13 +200,13 @@ const BusinessRegistrationPage = () => {
       {/* Form Steps */}
       <div className="mt-[150px] mb-[100px] flex flex-col items-center justify-start w-full px-4 pb-10">
         {step === 1 && (
-          <BusinessIdentificationSignupForm onChange={setIdentificationData} />
+          <BusinessIdentificationSignupForm onChange={setIdentificationData} role={role}/>
         )}
         {step === 2 && (
           <BusinessVerificationSignupForm onChange={setVerificationData} />
         )}
         {step === 3 && (
-          <BusinessFinishSignupForm onChange={setFinishData} />
+          <BusinessFinishSignupForm onChange={setFinishData} user_id={session.user.id} />
         )}
       </div>
 
@@ -197,15 +217,25 @@ const BusinessRegistrationPage = () => {
             <>
               <button
                 onClick={handleNext}
-                className="h-[40px] rounded-xl bg-[#FF8225] text-white 
-                           font-medium text-sm hover:bg-[#e6731f] transition-colors w-full"
+                disabled={
+                  (step === 1 && !isIdentificationComplete) ||
+                  (step === 2 && !isVerificationComplete)
+                }
+                className={`h-[40px] rounded-xl font-medium text-sm w-full transition-colors
+                ${
+                  (step === 1 && !isIdentificationComplete) ||
+                  (step === 2 && !isVerificationComplete)
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#FF8225] text-white hover:bg-[#e6731f]"
+                }`}
               >
                 Next
               </button>
 
+
               {step === 1 && (
                 <button
-                  onClick={() => console.log("Cancelled")}
+                  onClick={() => navigate('/profile')}
                   className="h-[40px] rounded-xl border border-gray-300 text-gray-700
                              font-medium text-sm hover:bg-gray-50 transition-colors w-full"
                 >
@@ -227,15 +257,16 @@ const BusinessRegistrationPage = () => {
             <>
               <button
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || !isFinishComplete}
                 className={`h-[40px] rounded-xl font-medium text-sm w-full ${
-                  loading
+                  loading || !isFinishComplete
                     ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                     : "bg-[#FF8225] text-white hover:bg-[#e6731f] transition-colors"
                 }`}
               >
                 {loading ? "Submitting..." : "Finish"}
               </button>
+
               <button
                 onClick={handleBack}
                 className="h-[40px] rounded-xl border border-gray-300 text-gray-700

@@ -1,19 +1,15 @@
 import React, { useState } from "react";
 
-const BusinessIdentificationSignupForm = ({ onChange }) => {
+
+
+const BusinessIdentificationSignupForm = ({ onChange, role }) => {
   const [formData, setFormData] = useState({
-    userType: "vendor", // default selection
+    userType: role, // default selection
     fullName: "",
     nric: "",
     businessName: "",
     businessLicense: "",
   });
-
-  const handleToggle = (type) => {
-    const updatedData = { ...formData, userType: type };
-    setFormData(updatedData);
-    if (onChange) onChange(updatedData);
-  };
 
   const handleChange = (e) => {
     const updatedData = { ...formData, [e.target.name]: e.target.value };
@@ -21,40 +17,10 @@ const BusinessIdentificationSignupForm = ({ onChange }) => {
     if (onChange) onChange(updatedData);
   };
 
+  
   return (
     <div className="flex flex-col items-center font-inter w-full">
       <div className="flex flex-col gap-3 w-[300px]">
-        {/* User Type Toggle */}
-        <div className="flex items-center gap-4 w-full">
-          <span className="text-sm font-medium text-gray-700">
-            I am a:
-          </span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => handleToggle("vendor")}
-              className={`px-4 py-1 rounded-xl text-sm font-medium transition-all ${
-                formData.userType === "vendor"
-                  ? "bg-[#FF8225] text-white"
-                  : "bg-white text-gray-700 border border-gray-300"
-              }`}
-            >
-              Vendor
-            </button>
-            <button
-              type="button"
-              onClick={() => handleToggle("organizer")}
-              className={`px-4 py-1 rounded-xl text-sm font-medium transition-all ${
-                formData.userType === "organizer"
-                  ? "bg-[#FF8225] text-white"
-                  : "bg-white text-gray-700 border border-gray-300"
-              }`}
-            >
-              Organizer
-            </button>
-          </div>
-        </div>
-
         {/* Full Name */}
         <div className="w-full">
           <label

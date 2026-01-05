@@ -70,8 +70,8 @@ const router = createBrowserRouter(
       <Route path='/business/product/:id/edit' element={<ProductActionPage />}/>
 
 
-  
-      <Route path='/business/registration' element={<BusinessRegistrationPage />}/>
+      <Route path='/admin/market/add' element={<MarketActionPage />}/>
+      <Route path='/:role/registration' element={<BusinessRegistrationPage />}/>
       <Route path='/auth' element={<AuthPage />}/>
       <Route path='/market-review/:review_id' element={<MarketReviewActionPage />}/>
       <Route path='/market' element={<MarketListPage />}/>
@@ -87,6 +87,7 @@ const router = createBrowserRouter(
 
       <Route path='/business/statistic' element={<VendorStatisticPage />}/>
       <Route path='/business/market' element={<BusinessMarketSpacePage />}/>
+
       <Route path='/business/market/apply' element={<MarketActionPage />}/>
       <Route path='/business/market/:id/edit' element={<MarketActionPage />}/>
       <Route path='/business/market/:id/plan' element={<MarketFloorPlanPage />}/>

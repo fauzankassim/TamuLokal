@@ -7,11 +7,9 @@ import {
   TbBell,
   TbBookmark,
   TbBuildingStore,
-  TbChartBarPopular,
   TbHistoryToggle,
   TbLayoutGrid,
   TbPlus,
-  TbBubbleTea,
   TbPackage,
   TbClipboardList
 } from "react-icons/tb";
@@ -165,7 +163,7 @@ const ProfileHamburger = () => {
                         {/* Organizer Registration */}
                         <button
                           onClick={() => {
-                            navigate("/register/organizer");
+                            navigate("/organizer/registration");
                             setIsOpen(false);
                           }}
                           className="flex items-center gap-3 text-gray-800 hover:text-[#FF8225] py-2 text-left text-base font-normal"
@@ -177,7 +175,7 @@ const ProfileHamburger = () => {
                         {/* Vendor Registration */}
                         <button
                           onClick={() => {
-                            navigate("/register/vendor");
+                            navigate("/vendor/registration");
                             setIsOpen(false);
                           }}
                           className="flex items-center gap-3 text-gray-800 hover:text-[#FF8225] py-2 text-left text-base font-normal"

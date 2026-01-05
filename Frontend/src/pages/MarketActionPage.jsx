@@ -7,10 +7,10 @@ import { useNavigate } from "react-router-dom";
 
 const MarketActionPage = () => {
     const navigate = useNavigate();
-  const { id } = useParams(); // undefined for add route
-  const session = useAuth(true); // ensure we have user session
-  const [marketData, setMarketData] = useState(null);
-  const base_url = import.meta.env.VITE_BACKEND_API_URL;
+    const { id } = useParams(); // undefined for add route
+    const session = useAuth(true); // ensure we have user session
+    const [marketData, setMarketData] = useState(null);
+    const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
   // Fetch market if editing
   useEffect(() => {

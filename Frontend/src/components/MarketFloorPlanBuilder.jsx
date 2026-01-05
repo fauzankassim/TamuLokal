@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { TbPlus, TbFlag, TbTrash, TbDeviceFloppy, TbX } from "react-icons/tb";
+import { useNavigate, useParams } from "react-router-dom";
 
 /**
  * MarketFloorPlanBuilder
@@ -13,16 +14,18 @@ import { TbPlus, TbFlag, TbTrash, TbDeviceFloppy, TbX } from "react-icons/tb";
  *   • Add stalls
  *   • Delete stalls
  *   • Set single starting point (unique)
- */
+ */ 
 
 const GRID_SIZE = 40;
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 2.5;
 
 export default function MarketFloorPlanBuilder() {
+  const navigate = useNavigate();
+  const { id: market_id } = useParams();
   const canvasRef = useRef(null);
   const lastTouchDistance = useRef(null);
-
+  const base_url = import.meta.env.VITE_BACKEND_API_URL;
   const [mode, setMode] = useState("add"); // add | delete | start
   const [stalls, setStalls] = useState([]); // {x,y,w,h,type}
   const [startPoint, setStartPoint] = useState(null); // single cell
@@ -344,19 +347,52 @@ const drawStalls = (ctx) => {
             </button>
             {/* SAVE */}
             <button
-            onClick={() => {
-                console.log({
-                gridSize: GRID_SIZE,
-                camera,
-                stalls,
-                startPoint,
-                version: "1.0",
-                });
-            }}
-            className="w-12 h-12 rounded-full flex items-center justify-center text-xl bg-blue-500 text-white"
+              onClick={async () => {
+                if (stalls.length === 0) {
+                  alert("No stalls to save!");
+                  return;
+                }
+
+                // Ask user for fee per lot
+                const fee = prompt("Enter fee for one lot:", "0");
+                if (!fee) return;
+
+                const totalDigits = String(stalls.length).length;
+
+                const payload = stalls.map((s, i) => ({
+                  lot: String(i + 1).padStart(totalDigits, "0"),
+                  fee: fee,
+                  market_id: market_id,
+                  x_floor_plan: s.x,
+                  y_floor_plan: s.y,
+                }));
+
+                try {
+                  const res = await fetch(`${base_url}/market/${market_id}/space`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  });
+
+                  if (!res.ok) {
+                    const errText = await res.text();
+                    console.error("Failed to save stalls:", errText);
+                    alert("Failed to save stalls. Check console for details.");
+                  } else {
+                    console.log("All stalls saved successfully!");
+                    alert("All stalls saved successfully!");
+                    navigate(`/business/market/${market_id}/space`);
+                  }
+                } catch (err) {
+                  console.error("Error saving stalls:", err);
+                  alert("Error saving stalls. Check console for details.");
+                }
+              }}
+              className="w-12 h-12 rounded-full flex items-center justify-center text-xl bg-blue-500 text-white"
             >
-            <TbDeviceFloppy />
+              <TbDeviceFloppy />
             </button>
+
         </div>
 
 

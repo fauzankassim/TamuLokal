@@ -1,5 +1,23 @@
 const { supabase } = require('../../db')
 
+const postMarketspace = async (marketspaces) => {
+  console.log(marketspaces);
+  const { data, error } = await supabase
+    .from("space")
+    .insert(marketspaces)
+    .select();
+
+    console.log(data);
+
+  return data;
+}
+
+const getMarketAdmin = async () => {
+  const { data, error } = await supabase.rpc("get_markets_as_admin");
+
+  console.log(error);
+  return data;
+}
 
 const getMarketStatistic = async (market_id) => {
   const { data, error } = await supabase
@@ -284,6 +302,8 @@ const postMarketVisitor = async (visitor_id, market_id) => {
 }
 
 module.exports = {
+  postMarketspace,
+  getMarketAdmin,
   getMarketStatistic,
   postMarketReview,
   getMarketspace,

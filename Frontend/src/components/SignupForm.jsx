@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { FaGoogle, FaApple } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 import { TbEye, TbEyeClosed } from "react-icons/tb"
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
@@ -82,20 +82,6 @@ const SignupForm = () => {
 
       const visitor = data.user;
       if (!visitor) throw new Error("Signup failed: user not created.");
-
-      const folderPath = `default/profile.jpg`;
-      const { data: publicUrl } = supabase.storage
-        .from("tamulokal")
-        .getPublicUrl(folderPath);
-
-      const folderUrl = publicUrl.publicUrl;
-
-      const { error: updateError } = await supabase
-        .from("visitor")
-        .update({ image: folderUrl })
-        .eq("id", visitor.id);
-
-      if (updateError) throw updateError;
 
       alert("Signup successful! Please check your email for verification.");
       navigate("/");
@@ -241,23 +227,6 @@ const SignupForm = () => {
         >
           <FaGoogle className="text-[#DB4437]" />
           Continue with Google
-        </button>
-
-        <button
-          type="button"
-          className="w-full h-[40px] rounded-xl border border-gray-300 
-                     flex items-center justify-center gap-2 text-sm font-medium 
-                     hover:bg-gray-50 transition-colors"
-          onClick={async () => {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-              provider: "apple",
-            });
-            if (error) console.error(error);
-            console.log(data);
-          }}
-        >
-          <FaApple className="text-black" />
-          Continue with Apple
         </button>
       </form>
     </div>

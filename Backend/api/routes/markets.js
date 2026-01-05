@@ -2,10 +2,12 @@ const controllers = require('../controllers/markets')
 const router = require('express').Router()
 
 router.get('/', controllers.GetMarkets)
+router.get('/admin', controllers.GetMarketAdmin)
 router.post('/', controllers.PostMarket)
 
 router.get('/:id', controllers.GetMarketById)
 router.put('/:id', controllers.PutMarket)
+router.post('/:id/space', controllers.PostMarketspace)
 
 router.get('/:id/space', controllers.GetMarketspace)
 router.post('/:id/visit', controllers.PostMarketVisitor)

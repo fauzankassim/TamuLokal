@@ -47,7 +47,7 @@ const MarketPage = () => {
   const now = new Date();
   const currentDay = now.getDay() === 0 ? 7 : now.getDay(); // Sunday = 7
   const todaysSchedule = market.schedules?.find((s) => s.daily_day === currentDay);
-
+  console.log(market);
   return (
     <div className="relative bg-[var(--white)]">
       {/* Top image */}

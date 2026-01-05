@@ -1,5 +1,12 @@
 const { supabase } = require('../../db')
 
+const getOrganizers = async () => {
+  const { data, error } = await supabase
+    .from("organizer")
+    .select("*");
+
+  return data;
+}
 
 const getOrganizerMarketById = async (id) => {
   const { data, error } = await supabase
@@ -112,6 +119,7 @@ const putOrganizerProfileById = async (id, update) => {
 }
 
 module.exports = {
+  getOrganizers,
   getOrganizerMarketById,
     putOrganizerProfileById,
     putOrganizerImageById,

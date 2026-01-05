@@ -1,5 +1,13 @@
-const { getOrganizerMarketById, putOrganizerImageById, getOrganizerProfileById, postOrganizer, putOrganizerProfileById} = require('../services/organizers')
+const { getOrganizers, getOrganizerMarketById, putOrganizerImageById, getOrganizerProfileById, postOrganizer, putOrganizerProfileById} = require('../services/organizers')
 
+const GetOrganizers = async (req, res) => {
+    try {
+        const organizers = await getOrganizers();
+        res.status(200).json(organizers);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
 
 const GetOrganizerMarketById = async (req, res) => {
     try {
@@ -57,6 +65,7 @@ const PutOrganizerProfileById = async (req, res) => {
 }
 
 module.exports = {
+    GetOrganizers,
     GetOrganizerMarketById,
     PutOrganizerProfileById,
     PutOrganizerImageById,

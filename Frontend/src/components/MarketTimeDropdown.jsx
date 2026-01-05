@@ -16,10 +16,11 @@ const MarketTimeDropdown = ({ schedules = [], isOpen, onToggle }) => {
   ];
 
   const formatTime = (timeStr) => {
+    if (!timeStr) return "";
     const [hours, minutes] = timeStr.split(":").map(Number);
     const date = new Date();
     date.setHours(hours, minutes, 0, 0);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   };
 
   const isCurrentlyOpen = (schedule) => {
@@ -31,23 +32,22 @@ const MarketTimeDropdown = ({ schedules = [], isOpen, onToggle }) => {
     let closeMinutes = closeParts[0] * 60 + closeParts[1];
 
     if (closeMinutes <= openMinutes) closeMinutes += 24 * 60; // handle past-midnight
-
     return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
   };
 
-  // Determine today's schedule if exists
-  const todaysSchedule = schedules.find(
-    (s) => s.daily_day === todayIndex
-  );
+  // Today's weekly schedule
+  const todaysSchedule = schedules.find((s) => s.weekly_day === todayIndex);
 
   const statusLabel = todaysSchedule
     ? isCurrentlyOpen(todaysSchedule)
       ? `Open until ${formatTime(todaysSchedule.close_time)}`
-      : `Closed`
+      : "Closed"
     : "Closed today";
 
-  const statusColor = todaysSchedule && isCurrentlyOpen(todaysSchedule)
-    ? "var(--green)"
+  const statusColor = todaysSchedule
+    ? isCurrentlyOpen(todaysSchedule)
+      ? "var(--green)"
+      : "var(--red)"
     : "var(--red)";
 
   return (
@@ -71,33 +71,44 @@ const MarketTimeDropdown = ({ schedules = [], isOpen, onToggle }) => {
 
       {isOpen && (
         <div className="px-4 py-2 text-sm text-[var(--black)] space-y-1">
+          {/* Weekly schedules */}
           {weekdayNames.map((dayName, index) => {
             const dayIndex = index + 1; // Monday=1, Sunday=7
-            const schedule = schedules.find((s) => s.daily_day === dayIndex);
+            const schedule = schedules.find((s) => s.weekly_day === dayIndex);
             const isToday = dayIndex === todayIndex;
+
+            // Determine color only for today
+            let labelColor = "var(--black)";
+            if (isToday) {
+              labelColor = schedule
+                ? "var(--green)"
+                : "var(--red)";
+            }
 
             const label = schedule
               ? `${formatTime(schedule.open_time)} - ${formatTime(schedule.close_time)}`
               : "Closed";
 
-            const labelColor = schedule ? "var(--black)" : "var(--red)";
-
             return (
               <p
                 key={dayName}
                 className={`flex justify-between ${isToday ? "font-semibold" : ""}`}
+                style={{ color: labelColor }}
               >
                 <span className="capitalize">{dayName}</span>
-                <span style={{ color: labelColor }}>{label}</span>
+                <span>{label}</span>
               </p>
             );
           })}
 
-          {/* Render once-off events */}
+          {/* Once-off events */}
           {schedules
             .filter((s) => s.once_date)
             .map((s) => (
-              <p key={s.id} className="flex justify-between font-medium text-[var(--blue)]">
+              <p
+                key={s.id}
+                className="flex justify-between font-medium text-[var(--blue)]"
+              >
                 <span>Special: {new Date(s.once_date).toLocaleDateString()}</span>
                 <span>
                   {formatTime(s.open_time)} - {formatTime(s.close_time)}

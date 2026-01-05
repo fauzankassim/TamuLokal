@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -59,6 +60,7 @@ const ScheduleHeader = ({ title, children }) => (
 );
 
 const MarketForm = ({ market = null, organizerId, onClose }) => {
+  const navigate = useNavigate();
   const currentLocation = useCurrentLocation();
   const isEdit = !!market;
   const [showDropdown, setShowDropdown] = useState(false);
@@ -509,8 +511,15 @@ const toggleWeeklyDay = (dayId) => {
       // Save schedules (keep this as is)
       await saveSchedules(marketId);
 
-      alert(isEdit ? "Market updated!" : "Market added!");
-      onClose();
+      if (!isEdit) {
+        alert("Market added!");
+
+        // Navigate to plan page for the newly created market
+        navigate(`/business/market/${marketId}/plan`);
+      } else {
+        alert("Market updated!");
+        onClose();
+      }
     } catch (err) {
       console.error(err);
       alert(isEdit ? "Failed to update market" : "Failed to add market");
