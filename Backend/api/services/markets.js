@@ -48,7 +48,7 @@ const downloadMarketStatistic = async (market_id) => {
     });
     const page = await browser.newPage();
 
-    const frontendReportUrl = `${process.env.FRONTEND}/business/market/${market_id}/statistic-download`;
+    const frontendReportUrl = `https://tamukinabalu.tech/business/market/${market_id}/statistic-download`;
 
   await page.goto(frontendReportUrl, { waitUntil: 'networkidle0' });
 
