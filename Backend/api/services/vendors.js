@@ -27,7 +27,7 @@ const downloadStatistic = async (vendor_id) => {
     });
     const page = await browser.newPage();
 
-    const frontendReportUrl = `http://localhost:5173/business/vendor/${vendor_id}/statistic-download`;
+    const frontendReportUrl = `${process.env.FRONTEND}/business/vendor/${vendor_id}/statistic-download`;
 
   await page.goto(frontendReportUrl, { waitUntil: 'networkidle0' });
 

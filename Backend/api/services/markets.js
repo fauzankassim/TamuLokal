@@ -48,7 +48,7 @@ const downloadMarketStatistic = async (market_id) => {
     });
     const page = await browser.newPage();
 
-    const frontendReportUrl = `http://localhost:5173/business/market/${market_id}/statistic-download`;
+    const frontendReportUrl = `${process.env.FRONTEND}/business/market/${market_id}/statistic-download`;
 
   await page.goto(frontendReportUrl, { waitUntil: 'networkidle0' });
 
