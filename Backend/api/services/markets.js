@@ -44,18 +44,30 @@ const getVerification = async (market_id, organizer_id) => {
 
 const downloadMarketStatistic = async (market_id) => {
   const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage', // Add this for server environments
+          '--single-process', // Helps with memory issues
+        ],
+    timeout: 60000, // Increase launch timeout
     });
     const page = await browser.newPage();
 
     const frontendReportUrl = `https://tamukinabalu.tech/business/market/${market_id}/statistic-download`;
 
-  await page.goto(frontendReportUrl, { waitUntil: 'networkidle0' });
+  await page.goto(frontendReportUrl, { 
+     waitUntil: ['networkidle0', 'domcontentloaded'],
+    timeout: 60000
+   });
+
+  await page.waitForTimeout(3000);
 
   const pdfBuffer = await page.pdf({
     format: 'A4',
     printBackground: true,
     margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' },
+    timeout: 30000
   });
 
   await browser.close();
