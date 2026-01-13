@@ -27,7 +27,7 @@ const SameHoursToggle = ({ sameOperatingHours, onToggle }) => (
       onClick={onToggle}
       className={`relative inline-flex h-6 w-11 items-center rounded-full ${sameOperatingHours ? 'bg-orange-500' : 'bg-gray-300'}`}
     >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${sameOperatingHours ? 'translate-x-6' : 'translate-x-1'}`} />
+      <span className={`inline-block h-4 w-4 transform rounded-full  transition ${sameOperatingHours ? 'translate-x-6' : 'translate-x-1'}`} />
     </button>
   </div>
 );
@@ -59,7 +59,7 @@ const ScheduleHeader = ({ title, children }) => (
   </div>
 );
 
-const MarketForm = ({ market = null, organizerId, onClose }) => {
+const MarketForm = ({ market = null, organizerId, onClose,  setLoading }) => {
   const navigate = useNavigate();
   const currentLocation = useCurrentLocation();
   const isEdit = !!market;
@@ -143,6 +143,17 @@ const getScheduleByIndexOrDay = (index, dayId) => {
         };
       default:
         return baseSchedule;
+    }
+  };
+
+  const handleRecenter = () => {
+    if (currentLocation && currentLocation.length > 0 && currentLocation[0]) {
+      const loc = { lat: currentLocation[0], lng: currentLocation[1] };
+      setLocation(loc);
+      if (mapRef.current) {
+        mapRef.current.setView([loc.lat, loc.lng], 13);
+        if (markerRef.current) markerRef.current.setLatLng([loc.lat, loc.lng]);
+      }
     }
   };
 
@@ -411,6 +422,7 @@ const toggleWeeklyDay = (dayId) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       let marketId;
 
       // 1. Get earliest date from schedules
@@ -489,7 +501,8 @@ const toggleWeeklyDay = (dayId) => {
           canvas.toBlob(resolve, "image/jpeg", 0.9)
         );
 
-        const filePath = `organizers/${organizerId || market.organizer_id}/${name}.jpg`;
+        const filePath = `organizers/${organizerId || market.organizer_id}/${marketId}.jpg`;
+
         const { error: uploadError } = await supabase.storage
           .from("tamulokal")
           .upload(filePath, jpegBlob, { contentType: "image/jpeg", upsert: true });
@@ -500,7 +513,7 @@ const toggleWeeklyDay = (dayId) => {
           .from("tamulokal")
           .getPublicUrl(filePath);
 
-        const imageUpdateRes = await fetch(`${base_url}/market/${marketId}`, {
+        const imageUpdateRes = await fetch(`${base_url}/market/${marketId}/image`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: publicUrl }),
@@ -512,17 +525,16 @@ const toggleWeeklyDay = (dayId) => {
       await saveSchedules(marketId);
 
       if (!isEdit) {
-        alert("Market added!");
-
         // Navigate to plan page for the newly created market
         navigate(`/business/market/${marketId}/plan`);
       } else {
-        alert("Market updated!");
         onClose();
       }
     } catch (err) {
       console.error(err);
       alert(isEdit ? "Failed to update market" : "Failed to add market");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -732,7 +744,7 @@ const toggleWeeklyDay = (dayId) => {
                     <select
                       value={schedule.annually_month || 1}
                       onChange={(e) => handleScheduleChange(index, 'annually_month', parseInt(e.target.value))}
-                      className="w-full h-[36px] border border-gray-300 px-2 text-sm rounded bg-white"
+                      className="w-full h-[36px] border border-gray-300 px-2 text-sm rounded "
                     >
                       {months.map(month => (
                         <option key={month.id} value={month.id}>{month.name}</option>
@@ -801,155 +813,168 @@ const toggleWeeklyDay = (dayId) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative font-inter">
+    <div className="py-8 px-2 flex justify-center min-h-screen">
       <form
         onSubmit={handleSubmit}
-        className="flex-1 px-6 py-6 space-y-6"
+        className="w-full max-w-2xl  rounded-2xl p-8 md:shadow-lg md:border md:border-gray-200 space-y-8"
+        style={{ minWidth: 0 }}
       >
-        {/* Image Upload */}
-        <div className="w-full">
-          <div
-            className="border-2 border-dashed border-gray-300 rounded-xl bg-white w-full h-48 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"
-            onClick={() => document.getElementById("marketImage").click()}
-          >
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Preview"
-                className="w-full h-full object-cover rounded-lg"
+
+        {/* image & name + desc as grid on desktop */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Image Upload Section */}
+          <div>
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-xl  w-full aspect-square min-h-[210px] flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"
+              onClick={() => document.getElementById("marketImage").click()}
+            >
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              ) : (
+                <span className="text-gray-400 text-sm">
+                  Click to upload market image
+                </span>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                id="marketImage"
+                className="hidden"
+                onChange={handleImageChange}
               />
-            ) : (
-              <span className="text-gray-400 text-sm">
-                Click to upload market image
-              </span>
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              id="marketImage"
-              className="hidden"
-              onChange={handleImageChange}
-            />
+            </div>
+    
           </div>
 
-          <label
-            className="block text-sm font-medium text-gray-700 mt-2 text-center cursor-pointer"
-            onClick={() => document.getElementById("marketImage").click()}
-          >
-            {previewUrl ? "Change Image" : "Add Image"}
-          </label>
+          {/* Name, Description, Address With LABELS */}
+          <div className="flex flex-col gap-3 justify-between">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1 font-medium">
+                Market Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Market Name"
+                className="w-full h-[40px] border border-gray-300 px-3 text-sm  focus:outline-none focus:ring-2 focus:ring-orange-400 rounded mb-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1 font-medium">
+                Description
+              </label>
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Description"
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm  focus:outline-none focus:ring-2 focus:ring-orange-400"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1 font-medium">
+                Address
+              </label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Address"
+                className="w-full h-[40px] border border-gray-300 px-3 text-sm  focus:outline-none focus:ring-2 focus:ring-orange-400 rounded"
+                required
+              />
+            </div>
+          </div>
+        </div>
 
-          {previewUrl && (
+        {/* Frequency & Schedule Section */}
+        <div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Frequency
+            </label>
+            <div className="relative w-full">
+              <button
+                type="button"
+                onClick={() => setShowDropdown((prev) => !prev)}
+                className="w-full h-[42px] border border-gray-300 rounded-xl px-3  text-left text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 flex justify-between items-center shadow-sm"
+              >
+                <span>
+                  {frequencies[frequency - 1]?.title || "Select frequency"}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-gray-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showDropdown && (
+                <ul className="relative z-20 mt-1 w-full  border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-auto">
+                  {frequencies.map((f, idx) => (
+                    <li
+                      key={f.id || idx}
+                      onClick={() => {
+                        setFrequency(f.id);
+                        setShowDropdown(false);
+                        setSchedules([]);
+                        setSameOperatingHours(false);
+                      }}
+                      className="px-4 py-2 text-sm hover:bg-orange-50 cursor-pointer"
+                    >
+                      {f.title}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          {/* Schedule Input UI */}
+          {renderScheduleInputs()}
+        </div>
+
+        {/* Map Picker Section */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm text-gray-600 font-medium">Select Market Location:</p>
             <button
               type="button"
-              onClick={handleRemoveImage}
-              className="mt-2 w-full h-[36px] rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition"
+              className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition ml-2"
+              onClick={handleRecenter}
             >
-              Remove Image
+              My Location
             </button>
-          )}
-        </div>
-
-        {/* Market Name */}
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Market Name"
-          className="w-full h-[40px] border border-gray-300 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
-          required
-        />
-
-        {/* Description */}
-        <textarea
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description"
-          className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
-          required
-        />
-
-        {/* Address */}
-        <input
-          type="text"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="Address"
-          className="w-full h-[40px] border border-gray-300 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
-          required
-        />
-
-        {/* Frequency */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Frequency
-          </label>   
-          <button
-            type="button"
-            onClick={() => setShowDropdown((prev) => !prev)}
-            className="w-full h-[42px] border border-gray-300 rounded-xl px-3 bg-white text-left text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 flex justify-between items-center shadow-sm"
-          >
-            <span>
-              {frequencies[frequency - 1]?.title || "Select frequency"}
-            </span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 text-gray-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          {showDropdown && (
-            <ul className="absolute z-[9999] mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-auto">
-              {frequencies.map((f, idx) => (
-                <li
-                  key={f.id || idx}
-                  onClick={() => {
-                    setFrequency(f.id);
-                    setShowDropdown(false);
-                    setSchedules([]);
-                    setSameOperatingHours(false);
-                  }}
-                  className="px-4 py-2 text-sm hover:bg-orange-50 cursor-pointer"
-                >
-                  {f.title}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* Schedule Inputs */}
-        {renderScheduleInputs()}
-
-        {/* Map Picker */}
-        <div>
-          <p className="text-sm text-gray-600 mb-1">Select Market Location:</p>
+          </div>
           <div
             id="map-picker"
             className="w-full h-64 rounded-xl border border-gray-300"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Selected: {location?.lat?.toFixed(5) || "..."}, {location?.lng?.toFixed(5) || "..."}
+            Selected: {location?.lat?.toFixed(5) || "..."},
+            {location?.lng?.toFixed(5) || "..."}
           </p>
         </div>
-      </form>
 
-      {/* Fixed bottom Save button */}
-      <div className="w-full bg-white border-t border-gray-200 px-6 py-4">
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="w-full py-3 bg-[#FF8225] text-white rounded-md font-medium hover:bg-[#e6731f] transition"
-        >
-          {isEdit ? "Save" : "Apply"}
-        </button>
-      </div>
+        {/* Save button at form end */}
+        <div className="flex gap-2 mt-6">
+          <button
+            type="submit"
+            className="flex-1 py-3 bg-[#FF8225] text-white rounded-md font-medium hover:bg-[#e6731f] transition"
+          >
+            {isEdit ? "Save" : "Register"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

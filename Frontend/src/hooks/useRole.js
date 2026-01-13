@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
  * @param {object} session - Supabase/Auth session
  * @param {string} baseUrl - Backend API base URL
  */
-const useRole = (session, baseUrl) => {
+const useRole = (session, baseUrl = import.meta.env.VITE_BACKEND_API_URL) => {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

@@ -1,5 +1,65 @@
-const {   getStatistic, getMarketspaceApplication, getVendorsByCategoryId, getVendorProfileById, getVendors, getVendorById, postVendor, putVendor, deleteVendorById, putVendorById, putVendorImageById, putVendorProfileById } = require('../services/vendors')
+const {   deleteVendor, putVerification, deleteMarketspaceApplication, downloadStatistic, getVerification, getStatistic, getMarketspaceApplication, getVendorsByCategoryId, getVendorProfileById, getVendors, getVendorById, postVendor, putVendor, deleteVendorById, putVendorById, putVendorImageById, putVendorProfileById } = require('../services/vendors')
 
+const DeleteVendor = async (req, res) => {
+    try {
+        const { id: vendor_id } = req.params;
+        const vendor = await deleteVendor(vendor_id);
+        res.status(200).json(vendor);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+const PutVerification = async (req, res) => {
+    try {
+        const { id: vendor_id } = req.params;
+        const { verified } = req.query;
+        const verification = await putVerification(vendor_id, verified);
+        res.status(200).json(verification);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+const DeleteMarketspaceApplication = async (req, res) => {
+    try {
+        const { id: application_id } = req.query;
+        const application = await deleteMarketspaceApplication(application_id);
+        res.status(200).json(application);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+const DownloadStatistic = async (req, res) => {
+
+  try {
+    const { id: vendor_id} = req.params;
+    // Generate PDF buffer from service
+    const pdfBuffer = await downloadStatistic(vendor_id);
+
+    // Set headers for download
+    const filename = `vendor-statistic.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error('[DownloadMarketStatistic]', err);
+    res.status(500).json({ error: 'Failed to generate PDF' });
+  }
+}
+
+const GetVerification = async (req, res) => {
+    try {
+        const { id: vendor_id } = req.params;
+        const verification = await getVerification(vendor_id);
+        res.status(200).json(verification);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
 const GetStatistic = async (req, res) => {
     try {
         const { id: vendor_id } = req.params;
@@ -111,6 +171,11 @@ const DeleteVendorById = async (req, res) => {
 
 
 module.exports = {
+    DeleteVendor,
+    PutVerification,
+    DeleteMarketspaceApplication,
+    DownloadStatistic,
+    GetVerification,
     GetStatistic,
     GetMarketspaceApplication,
     PutVendorProfileById,

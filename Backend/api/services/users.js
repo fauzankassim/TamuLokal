@@ -1,5 +1,19 @@
 const { supabase } = require('../../db')
 
+
+const getProfile = async (user_id) => {
+    const { data, error } = await supabase.rpc("get_user_profile", {user_id: user_id}).single();
+
+    return data;
+}
+
+const postUserClick = async (viewer_id, viewed_id) => {
+    const { data, error } = await supabase
+        .from("profile_click")
+        .insert({ viewer_id, viewed_id});
+
+    return data;
+}
 const deleteUserFollow = async (follower_id, following_id) => {
     const { data, error } = await supabase
         .from("account_follow")
@@ -33,6 +47,8 @@ const getUserByQuery = async (query) => {
         .rpc('search_profiles', {
             p_search: query
         });
+
+        console.log(error);
     
     return data;
 }
@@ -56,6 +72,8 @@ const getUserRolesById = async (id) => {
 };
 
 module.exports = {
+    getProfile,
+    postUserClick,
     deleteUserFollow,
     getUserFollow,
     postUserFollow,

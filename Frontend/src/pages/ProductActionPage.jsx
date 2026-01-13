@@ -4,12 +4,14 @@ import { useAuth } from "../hooks/useAuth";
 import ProductForm from "../components/ProductForm";
 import { TbChevronLeft } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 
 const ProductActionPage = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // undefined for add route
   const session = useAuth(true); // ensure we have user session
   const [productData, setProductData] = useState(null);
+  const [categoryData, setCategoryData] = useState(null);
   const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
   // Fetch product if editing
@@ -22,7 +24,8 @@ const ProductActionPage = () => {
         if (!res.ok) throw new Error("Failed to fetch product");
         const data = await res.json();
 
-        setProductData(data);
+        setProductData(data.product);
+        setCategoryData(data.categories);
       } catch (err) {
         console.error(err);
       }
@@ -30,31 +33,24 @@ const ProductActionPage = () => {
 
     fetchProduct();
   }, [id]);
-
+  console.log(productData);
   if (!session) return null; // wait for session
 
   return (
     
-    <div className="relative h-screen overflow-hidden bg-[#FFFDFA] flex flex-col items-center font-inter p-4">
+    <div className="w-screen h-screen">
 
-      <div className="max-w-xl w-full">
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            onClick={() => navigate("/profile")}
-            className="text-gray-700 hover:text-orange-500 transition"
-          >
-            <TbChevronLeft className="text-2xl" />
-          </button>
-          <h1 className="text-xl font-semibold text-gray-800">
-            {id ? "Edit Product" : "Add Product"}
-          </h1>
-        </div>
-      </div>
-      <ProductForm
-        vendorId={session.user.id}
-        product={id ? productData : null} // pass product data if editing
-        onClose={() => window.history.back()}
-      />
+      <Header title={id ? "Edit Product" : "Add Product"} backPath={"/business/product"} />
+
+      <main className="overflow-hidden flex flex-col items-center font-inter p-4">
+        <ProductForm
+          vendorId={session.user.id}
+          product={id ? productData : null} // pass product data if editing
+          category={id ? categoryData : null}
+          onClose={() => window.history.back()}
+        />
+      </main>
+
     </div>
   );
 };

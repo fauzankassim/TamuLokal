@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../hooks/useAuth";
 
-const ProfileInformation = ({ userId, role, isOwnProfile = true }) => {
+const ProfileInformation = ({ userId, isOwnProfile = true }) => {
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({
     fullname: "",
@@ -18,13 +18,13 @@ const ProfileInformation = ({ userId, role, isOwnProfile = true }) => {
 
   const session = useAuth();
   const currentUserId = session?.user?.id;
-
+  console.log(profile);
   useEffect(() => {
     if (!userId) return;
 
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`${base_url}/${role}/${userId}`);
+        const res = await fetch(`${base_url}/user/${userId}/profile`);
         if (!res.ok) throw new Error("Failed to fetch profile");
 
         const data = await res.json();
@@ -42,7 +42,7 @@ const ProfileInformation = ({ userId, role, isOwnProfile = true }) => {
     };
 
     fetchProfile();
-  }, [userId, base_url, role]);
+  }, [userId, base_url]);
 
   // ✅ CHECK FOLLOW STATE
   useEffect(() => {
@@ -91,7 +91,7 @@ const ProfileInformation = ({ userId, role, isOwnProfile = true }) => {
           canvas.toBlob(resolve, "image/jpeg", 0.9)
         );
 
-        const filePath = `${role}s/${userId}/profile.jpg`;
+        const filePath = `$visitors/${userId}/${userId}.jpg`;
 
         const { error: uploadError } = await supabase.storage
           .from("tamulokal")
@@ -109,7 +109,7 @@ const ProfileInformation = ({ userId, role, isOwnProfile = true }) => {
         imageUrl = `${publicUrl}?t=${new Date().getTime()}`;
       }
 
-      const res = await fetch(`${base_url}/${role}/${userId}`, {
+      const res = await fetch(`${base_url}/visitor/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -196,7 +196,7 @@ const ProfileInformation = ({ userId, role, isOwnProfile = true }) => {
       <div className="text-center text-gray-500 mt-10">Loading profile...</div>
     );
 
-  const displayImage = previewUrl || formData.image || "/default-profile.png";
+  const displayImage = previewUrl || formData.image || "/profile.png";
 
   return (
     <div className="flex flex-col items-start w-full px-4">

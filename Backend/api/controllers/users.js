@@ -1,5 +1,26 @@
-const { deleteUserFollow, getUserFollow, postUserFollow, getUserByQuery ,getUserRolesById } = require('../services/users')
+const { getProfile, postUserClick, deleteUserFollow, getUserFollow, postUserFollow, getUserByQuery ,getUserRolesById } = require('../services/users')
 
+const GetProfile = async (req, res) => {
+    try { 
+        const { id: user_id } = req.params;
+        const profile = await getProfile(user_id);
+        res.status(200).json(profile);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+const PostUserClick = async (req, res) => {
+    try {
+        const { id: viewed_id } = req.params;
+        const { viewer_id } = req.body;
+        const click = await postUserClick(viewer_id, viewed_id);
+        res.status(200).json(click);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error)
+    }
+}
 
 const DeleteUserFollow = async (req, res) => {
     try {
@@ -52,6 +73,8 @@ const GetUserByQuery = async (req, res) => {
 
 
 module.exports = {
+    GetProfile,
+    PostUserClick,
     DeleteUserFollow,
     GetUserFollow,
     PostUserFollow,

@@ -1,29 +1,58 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TbSearch, TbX } from "react-icons/tb";
 import useMarket from "../hooks/useMarket";
+import { useAuth } from "../hooks/useAuth";
 
-const dummyMarkets = [
-  { id: 1, name: "Gaya Street Market" },
-  { id: 2, name: "Tamu Donggongon" },
-  { id: 3, name: "Tamu Inanam" },
-  { id: 4, name: "Kundasang Market" },
-  { id: 5, name: "Tamu Kota Belud" },
-  { id: 6, name: "Tamu Kota Marudu" },
-  { id: 7, name: "Tamu Beaufort" },
-];
-
-
-const CommunityForumForm = () => {
+const CommunityForumForm = ({ setSubmitting = () => {} }) => {
   const { markets } = useMarket();
+  const session = useAuth();
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
-  const [market, setMarket] = useState("");
+  const [marketId, setMarketId] = useState("");
+  const [marketName, setMarketName] = useState("");
   const [showMarketPopup, setShowMarketPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ title, caption, market });
+    setSubmitting(true);
+
+    if (!session?.user?.id) {
+      alert("User not logged in");
+      setSubmitting(false);
+      return;
+    }
+
+    const payload = {
+      title,
+      caption,
+      market_id: marketId,
+      visitor_id: session.user.id,
+      type: 2, // forum type
+    };
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/content?type=forum`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to create forum");
+
+      navigate("/community");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const filteredMarkets = markets.filter((m) =>
@@ -31,7 +60,8 @@ const CommunityForumForm = () => {
   );
 
   const handleSelectMarket = (m) => {
-    setMarket(m.name);
+    setMarketId(m.id);
+    setMarketName(m.name);
     setShowMarketPopup(false);
   };
 
@@ -75,8 +105,8 @@ const CommunityForumForm = () => {
             className="border border-gray-300 rounded-md p-3 text-sm bg-white cursor-pointer hover:border-orange-400 transition flex justify-between items-center"
             onClick={() => setShowMarketPopup(true)}
           >
-            <span className={market ? "text-gray-900" : "text-gray-400"}>
-              {market || "Select a market..."}
+            <span className={marketName ? "text-gray-900" : "text-gray-400"}>
+              {marketName || "Select a market..."}
             </span>
             <TbSearch className="text-gray-500" />
           </div>

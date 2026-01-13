@@ -1,11 +1,69 @@
 const { supabase } = require('../../db')
+const puppeteer = require('puppeteer');
 
+const deleteVendor = async (vendor_id) => {
+  const { data, error } = await supabase
+    .from("vendor")
+    .delete()
+    .eq("id", vendor_id);
+}
+
+const putVerification = async (vendor_id, verified) => {
+
+  const { data, error }= await supabase
+    .from("vendor")
+    .update({verified})
+    .eq("id", vendor_id)
+    .select()
+    .single();
+
+
+  return data;
+}
+
+const downloadStatistic = async (vendor_id) => {
+  const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+
+    const frontendReportUrl = `http://localhost:5173/business/vendor/${vendor_id}/statistic-download`;
+
+  await page.goto(frontendReportUrl, { waitUntil: 'networkidle0' });
+
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' },
+  });
+
+  await browser.close();
+
+  return pdfBuffer;
+}
+
+const getVerification = async (vendor_id) => {
+  const { data, error } = await supabase
+    .from("vendor")
+    .select("verified")
+    .eq("id", vendor_id)
+    .single();
+
+  return data;
+}
 const getStatistic = async (vendor_id) => {
   const { data, error } = await supabase.rpc("get_vendor_statistic", {p_vendor_id: vendor_id}).single();
 
   return data;
 }
 
+const deleteMarketspaceApplication = async (application_id) => {
+  const { data, error } = await supabase
+    .from("space_applications")
+    .delete()
+    .eq("id", application_id);
+
+}
 const getMarketspaceApplication = async (vendor_id) => {
   const { data, error } = await supabase.rpc("get_marketspace_application_as_vendor", { p_vendor_id: vendor_id});
 
@@ -26,7 +84,7 @@ const getVendorById = async (id) => {
 
 const getVendorProfileById = async (id) => {
     const { data, error } = await supabase.rpc('get_business_profile', { user_id: id}).single();
-
+    console.log(error);
     return data;
 };
 
@@ -150,6 +208,11 @@ const deleteVendorById = async (id) => {
 
 
 module.exports = {
+  deleteVendor,
+  putVerification,
+  deleteMarketspaceApplication,
+  downloadStatistic,
+  getVerification,
   getStatistic,
     getMarketspaceApplication,
     putVendorImageById,

@@ -1,4 +1,37 @@
-const { deleteProductById, putProductById, getProductById, postProduct, putProductImageById, getProductQuantityType, getProductsByVendorID } = require('../services/products')
+const { putProductReview, getProductReview, postProductReview, deleteProductCategories, postProductCategories, deleteProductById, putProductById, getProductById, postProduct, putProductImageById, getProductQuantityType, getProductsByVendorID, getProductCategories } = require('../services/products')
+
+const PutProductReview = async (req, res) => {
+    try {
+        const { id: product_id } = req.params;
+        const { id: review_id } = req.query;
+        const data = req.body;
+        const review = await putProductReview(product_id, review_id, data);
+        res.status(200).json(review);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+const GetProductReview = async (req, res) => {
+    try {
+        const { id: review_id } = req.query;
+        const review = await getProductReview(review_id);
+        res.status(200).json(review);
+
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+const PostProductReview = async (req, res) => {
+    try {
+        const { id: product_id } = req.params;
+        const { visitor_id, rating, review } = req.body;
+        const productReview = await postProductReview({product_id, visitor_id, rating, review});
+        res.status(200).json(productReview);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
 
 
 
@@ -16,7 +49,8 @@ const GetProductById = async (req, res) => {
     try {
         const id = req.params.id;
         const product = await getProductById(id);
-        res.status(200).json(product);
+        const categories = await getProductCategories(id);
+        res.status(200).json({product, categories});
     } catch (err) {
         res.status(500).send(err);
     }
@@ -45,7 +79,12 @@ const GetProductQuantityType = async (req, res) => {
 
 const PostProduct = async (req, res) => {
     try {
-        const product = await postProduct(req.body);
+        const { vendor_id, name, price, quantity, quantity_type, categories } = req.body;
+        const product = await postProduct({vendor_id, name, price, quantity, quantity_type});
+        console.log(categories);
+        for (category in categories) {
+            await postProductCategories(product.id, categories[category]);
+        }
         res.status(200).json(product);
     } catch (err) {
         res.status(500).send(err.message);
@@ -55,9 +94,13 @@ const PostProduct = async (req, res) => {
 const PutProductById = async (req, res) => {
     try {
         const id = req.params.id;
-        const data = req.body;
+        const { name, price, quantity, quantity_type, categories } = req.body;
 
-        const product = await putProductById(id, data);
+        const product = await putProductById(id, {name, price, quantity, quantity_type});
+        const deleteCategories = await deleteProductCategories(id);
+        for (category in categories) {
+            await postProductCategories(id, categories[category]);
+        }
         res.status(200).json(product);
     } catch (err) {
         res.status(500).send(err)
@@ -77,6 +120,9 @@ const PutProductImageById = async (req, res) => {
 
 
 module.exports = {
+    GetProductReview,
+    PostProductReview,
+    PutProductReview,
     DeleteProductById,
     PutProductById,
     GetProductById,

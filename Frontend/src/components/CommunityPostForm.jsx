@@ -1,12 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TbPhotoPlus, TbSearch, TbX } from "react-icons/tb";
 import useMarket from "../hooks/useMarket";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../supabaseClient";
+import Spinner from "./Spinner";
 
-const CommunityPostForm = () => {
+const CAPTION_LIMIT = 250;
 
+const CommunityPostForm = ({ setSubmitting }) => {
   const session = useAuth();
+  const navigate = useNavigate();
   const { markets } = useMarket();
 
   const [photo, setPhoto] = useState(null); // preview only
@@ -27,11 +31,13 @@ const CommunityPostForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
     if (!session?.user?.id) {
       alert("User not logged in");
+      setSubmitting(false);
       return;
     }
-
+ 
     const payload = {
       caption,
       market_id: market,
@@ -53,34 +59,28 @@ const CommunityPostForm = () => {
       if (!res.ok) throw new Error("Failed to create content");
 
       const created = await res.json();
-      console.log("Created content:", created);
-
-      const contentId = created?.data?.id || created?.id;  // NEW
+      const contentId = created?.data?.id || created?.id;
       if (!contentId) throw new Error("No content ID returned");
-
+   setSubmitting(true);
       // 2️⃣ Upload image to STORAGE if exists (photo preview chosen)
       const fileInput = document.getElementById("photoUpload");
       const file = fileInput.files[0];
 
       if (file) {
-        const filePath = `contents/${contentId}/${file.name}`;  // NEW
+        const ext = file.name.split(".").pop();
+        const filePath = `contents/${contentId}.${ext}`;
 
-        const { data: uploadData, error: uploadError } =
-          await supabase.storage
-            .from("tamulokal")
-            .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage
+          .from("tamulokal")
+          .upload(filePath, file, { upsert: true });
 
         if (uploadError) throw uploadError;
-
-        console.log("Image uploaded:", uploadData);
 
         // 3️⃣ Get public URL
         const { data: urlData } = supabase.storage
           .from("tamulokal")
           .getPublicUrl(filePath);
-
         const publicUrl = urlData.publicUrl;
-        console.log("Image URL:", publicUrl);
 
         // 4️⃣ Update content image in backend
         const imgRes = await fetch(
@@ -95,14 +95,15 @@ const CommunityPostForm = () => {
         if (!imgRes.ok) throw new Error("Failed to update image");
       }
 
-      alert("Posted!");
-
+      navigate("/community");
+      return;
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
+    } finally {
+      setSubmitting(false);
     }
   };
-
 
   const filteredMarkets = markets.filter((m) =>
     m.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -115,81 +116,91 @@ const CommunityPostForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative">
-      <form onSubmit={handleSubmit} className="flex-1 px-6 py-4 space-y-6 pb-28">
-
-        {/* Photo Preview Only */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Photo (preview only)
-          </label>
-          <div
-            className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white h-40 cursor-pointer hover:border-orange-400 transition"
-            onClick={() => document.getElementById("photoUpload").click()}
-          >
-            {photo ? (
-              <img
-                src={photo}
-                alt="Preview"
-                className="w-full h-full object-cover rounded-md"
+    <div className="w-full flex flex-col relative">
+      <form id="community-post-form" onSubmit={handleSubmit} className="px-6 py-4 space-y-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Photo Preview Only - square ratio */}
+          <div className="md:w-1/2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Photo (preview only)
+            </label>
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white w-full aspect-square cursor-pointer hover:border-orange-400 transition"
+              onClick={() => document.getElementById("photoUpload").click()}
+            >
+              {photo ? (
+                <img
+                  src={photo}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-md"
+                />
+              ) : (
+                <div className="flex flex-col items-center text-gray-400">
+                  <TbPhotoPlus className="text-4xl mb-2" />
+                  <span className="text-sm">Click to preview image</span>
+                </div>
+              )}
+              <input
+                id="photoUpload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoChange}
               />
-            ) : (
-              <div className="flex flex-col items-center text-gray-400">
-                <TbPhotoPlus className="text-4xl mb-2" />
-                <span className="text-sm">Click to preview image</span>
+            </div>
+          </div>
+
+          {/* Right column inputs */}
+          <div className="md:w-1/2 flex flex-col justify-between">
+            {/* Caption */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Caption
+              </label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Write something..."
+                rows="6"
+                className="w-full border border-gray-300 rounded-md p-3 text-sm bg-white focus:ring-2 focus:ring-orange-400 focus:outline-none"
+              ></textarea>
+              <div
+                className={`text-right text-xs mt-1 ${
+                  caption.length > CAPTION_LIMIT ? "text-red-500" : "text-gray-500"
+                }`}
+              >
+                {caption.length} / {CAPTION_LIMIT}
               </div>
-            )}
-            <input
-              id="photoUpload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handlePhotoChange}
-            />
+            </div>
+
+            {/* Market Tag */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tag a Market
+              </label>
+              <div
+                className="border border-gray-300 rounded-md p-3 text-sm bg-white cursor-pointer hover:border-orange-400 transition flex justify-between items-center"
+                onClick={() => setShowMarketPopup(true)}
+              >
+                <span className={marketName ? "text-gray-900" : "text-gray-400"}>
+                  {marketName || "Select a market..."}
+                </span>
+                <TbSearch className="text-gray-500" />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Caption */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Caption
-          </label>
-          <textarea
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder="Write something..."
-            rows="4"
-            className="w-full border border-gray-300 rounded-md p-3 text-sm bg-white focus:ring-2 focus:ring-orange-400 focus:outline-none"
-          ></textarea>
-        </div>
-
-        {/* Market Tag */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tag a Market
-          </label>
-          <div
-            className="border border-gray-300 rounded-md p-3 text-sm bg-white cursor-pointer hover:border-orange-400 transition flex justify-between items-center"
-            onClick={() => setShowMarketPopup(true)}
+        {/* Share Button inside form (mobile only) */}
+        <div className="flex justify-end md:hidden">
+          <button
+            type="submit"
+            className="px-6 py-3 bg-orange-500 text-white rounded-md font-medium hover:bg-orange-600 transition w-full"
           >
-            <span className={marketName ? "text-gray-900" : "text-gray-400"}>
-              {marketName || "Select a market..."}
-            </span>
-            <TbSearch className="text-gray-500" />
-          </div>
+            Share
+          </button>
         </div>
       </form>
-
-      {/* Fixed Share Button */}
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 px-6 py-4">
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="w-full py-3 bg-orange-500 text-white rounded-md font-medium hover:bg-orange-600 transition"
-        >
-          Share
-        </button>
-      </div>
 
       {/* Market Bottom Sheet */}
       {showMarketPopup && (

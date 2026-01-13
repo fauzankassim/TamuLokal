@@ -1,6 +1,10 @@
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 import React, { useState, useEffect, useRef } from "react";
-import { TbSearch, TbAdjustmentsHorizontal, TbX } from "react-icons/tb";
+import { TbSearch, TbAdjustmentsHorizontal} from "react-icons/tb";
+
 import { useNavigate } from "react-router-dom";
+
 
 const SearchPage = () => {
   const [query, setQuery] = useState("");
@@ -19,6 +23,47 @@ const SearchPage = () => {
   const navigate = useNavigate();
 
   /* -------------------- Effects -------------------- */
+const startTour = () => {
+  const tour = driver({
+    showProgress: true,
+    allowClose: true,
+    overlayOpacity: 0.5,
+    steps: [
+      {
+        element: "#search-input",
+        popover: {
+          title: "Search Input",
+          description:
+            "Type here to search for markets, vendors, or visitors.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#filter-button",
+        popover: {
+          title: "Filters",
+          description:
+            "Click here to filter your search results.",
+          side: "top",
+          align: "start",
+        },
+      },
+    ],
+    onDestroyed: () => {
+      localStorage.setItem("search_tour_seen", "true");
+    },
+  });
+
+  tour.drive();
+};
+
+useEffect(() => {
+  const seen = localStorage.getItem("search_tour_seen");
+  if (!seen) {
+    startTour();
+  }
+}, []);
 
   // Focus input on mount
   useEffect(() => {
@@ -106,9 +151,10 @@ const SearchPage = () => {
       <div className="flex gap-2 items-start relative">
         {/* Search Input */}
         <div className="flex-1 relative">
-          <div className="flex items-center bg-[var(--white)] border border-[var(--black)] rounded-xl shadow-md px-4 py-4 gap-2">
+          <div id="search-input" className="flex items-center bg-[var(--white)] border border-[var(--black)] rounded-xl shadow-md px-4 py-4 gap-2">
             <TbSearch className="text-[var(--gray)]" />
             <input
+   
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -127,13 +173,11 @@ const SearchPage = () => {
                     onClick={() => handleSelect(item)}
                     className={`py-2 cursor-pointer flex items-center gap-2`}
                   >
-                    {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    )}
+                    <img
+                      src={item.image === "" ? "/profile.png" : item.image}
+                      alt={item.name}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
                     <span className="text-[var(--black)]">{item.name}</span>
                   </div>
                 ))
@@ -148,7 +192,6 @@ const SearchPage = () => {
         <SearchFilter filters={filters} setFilters={setFilters} />
       </div>
 
-      <div className="absolute left-0 right-0 h-px bg-gray-300 mt-2"></div>
     </div>
   );
 };
@@ -184,6 +227,7 @@ const SearchFilter = ({ filters, setFilters }) => {
     <>
       {/* Filter Button */}
       <button
+        id="filter-button"
         onClick={() => setOpen(!open)}
         className="w-14 h-14 bg-[var(--orange)] rounded-xl shadow-md flex items-center justify-center"
       >

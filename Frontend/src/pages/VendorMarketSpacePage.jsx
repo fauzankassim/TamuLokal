@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import ProductList from "../components/ProductList";
 import { TbChevronLeft } from "react-icons/tb";
+import Header from "../components/Header";
 
 const VendorMarketSpacePage = () => {
   const navigate = useNavigate();
@@ -15,22 +16,10 @@ const VendorMarketSpacePage = () => {
 
   return (
     <div className="w-screen h-screen flex flex-col relative">
-      <div className="px-4 py-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/profile")}
-            className="text-gray-700 hover:text-orange-500 transition"
-          >
-            <TbChevronLeft className="text-2xl" />
-          </button>
+      <Header title={"Manage Product"} />
+  
 
-          <h1 className="text-xl font-semibold text-gray-800">
-            Manage Product
-          </h1>
-        </div>
-      </div>
-
-      <main className="p-4">
+      <main className="p-4 md:mx-auto">
         <ProductList vendorId={vendorId} isOwnProfile={false} showAvailabilityToggle={true}/>
       </main>
 

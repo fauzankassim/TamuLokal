@@ -1,6 +1,17 @@
 const { supabase } = require('../../db')
 
 
+const getProductReviewsByVisitor = async (visitor_id) => {
+    const { data, error } = await supabase.rpc("get_visitor_product_reviews", {p_visitor_id: visitor_id});
+
+    return data;
+}
+const deleteMarketReview = async (review_id) => {
+    const { data, error } = await supabase
+        .from("market_review")
+        .delete()
+        .eq("id", review);
+}
 const getContent = async (visitor_id) => {
     const {data, error } = await supabase
         .from("content")
@@ -9,19 +20,40 @@ const getContent = async (visitor_id) => {
 
     return data;
 }
-const putMarketReview = async (review_id, rating, review) => {
-    const { data, error } = await supabase
-        .from("market_review")
-        .update({
-            rating,
-            review
-        })
-        .eq("id", review_id)
-        .select()
-        .single();
 
-    return data;
-}
+const putMarketReview = async (review_id, payload) => {
+  const updateData = {};
+
+  if (payload.rating !== undefined) {
+    updateData.rating = payload.rating;
+  }
+
+  if (payload.review !== undefined) {
+    updateData.review = payload.review;
+  }
+
+  if (payload.image !== undefined) {
+    updateData.image = payload.image;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    throw new Error("No fields to update");
+  }
+
+  const { data, error } = await supabase
+    .from("market_review")
+    .update(updateData)
+    .eq("id", review_id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  console.log(error);
+  return data;
+};
+
+
 const getMarketReview = async (visitor_id, review_id) => {
     const { data, error } = await supabase
         .from("market_review")
@@ -32,6 +64,41 @@ const getMarketReview = async (visitor_id, review_id) => {
 
     return data;
 }
+
+const putProductReview = async (review_id, payload) => {
+  const updateData = {};
+
+  if (payload.rating !== undefined) updateData.rating = payload.rating;
+  if (payload.review !== undefined) updateData.review = payload.review;
+  if (payload.image !== undefined) updateData.image = payload.image;
+
+  if (Object.keys(updateData).length === 0) {
+    throw new Error("No fields to update");
+  }
+
+  const { data, error } = await supabase
+    .from("product_review")
+    .update(updateData)
+    .eq("id", review_id)
+    .select()
+    .single();
+
+  console.log(error);
+
+  return data;
+};
+
+// Get a product review by visitor and review ID
+const getProductReview = async (visitor_id, review_id) => {
+  const { data, error } = await supabase
+    .from("product_review")
+    .select("*")
+    .eq("visitor_id", visitor_id)
+    .eq("id", review_id)
+    .single();
+
+  return data;
+};
 
 const getMarketBookmark = async (visitor_id) => {
     const { data, error } = await supabase
@@ -118,6 +185,10 @@ const getVisitorVisitedMarket = async (id) => {
 }
 
 module.exports = {
+    getProductReviewsByVisitor,
+    putProductReview,
+    getProductReview,
+    deleteMarketReview,
     getContent,
     putMarketReview,
     getMarketReview,

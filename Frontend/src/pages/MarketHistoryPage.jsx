@@ -60,7 +60,7 @@ const MarketHistoryPage = () => {
 
     return { displayDate, time }
   }
-  console.log(history);
+
   return (
     <div className="w-screen h-full flex flex-col relative">
       {/* ===== Header (UNCHANGED) ===== */}

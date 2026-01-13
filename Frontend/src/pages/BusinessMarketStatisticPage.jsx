@@ -12,6 +12,12 @@ const BusinessMarketStatisticPage = () => {
     const [statistic, setStatistic] = useState(null);
     const [vendors, setVendors] = useState([]);
 
+    const handleDownloadReport = () => {
+        if (!market_id) return;
+
+        window.location.href = `${base_url}/market/${market_id}/statistic-download`;
+    };
+
     useEffect(() => {
         if (!market_id) return;
 
@@ -31,7 +37,6 @@ const BusinessMarketStatisticPage = () => {
                 const res = await fetch(`${base_url}/market/${market_id}/vendor`);
                 if (!res.ok) throw new Error("Failed to fetch vendors");
                 const data = await res.json();
-                console.log("Vendors for market:", data);
                 setVendors(data);
             } catch (err) {
                 console.error(err);
@@ -103,10 +108,14 @@ const BusinessMarketStatisticPage = () => {
                     <option value="all">All Time</option>
                 </select>
 
-                <button className="flex items-center gap-1 px-3 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition">
+                <button
+                    onClick={handleDownloadReport}
+                    className="flex items-center gap-1 px-3 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition"
+                >
                     <TbFileTypePdf className="text-lg" />
                     Full Report
                 </button>
+
             </div>
 
             {/* Statistic Cards */}
@@ -135,7 +144,7 @@ const BusinessMarketStatisticPage = () => {
                             filterByTime={filterByTime}
                         />
                         <MarketStatisticCard
-                            title="Profile Click"
+                            title="Market Click"
                             data={statistic.market_click}
                             trendText="xx people have clicked on your market"
                             filter={filter}

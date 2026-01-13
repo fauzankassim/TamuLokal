@@ -1,4 +1,48 @@
-const {  getContent, putMarketReview, getMarketReview, getMarketBookmark, getMarketHistory, getVisitorVisitedMarket, getVisitors, getVisitorProfileById, postVisitor, putVisitor, deleteVisitorById, putVisitorById, putVisitorImageById } = require('../services/visitors')
+const {  getProductReviewsByVisitor, getProductReview, putProductReview, getContent, putMarketReview, getMarketReview, getMarketBookmark, getMarketHistory, getVisitorVisitedMarket, getVisitors, getVisitorProfileById, postVisitor, putVisitor, deleteVisitorById, putVisitorById, putVisitorImageById } = require('../services/visitors')
+
+
+const GetProductReviewsByVisitor = async (req, res) => {
+    try {
+        const { id: visitor_id } = req.params;
+        const reviews = await getProductReviewsByVisitor(visitor_id);
+
+        res.status(200).send(reviews);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+// PUT /visitor/:visitor_id/product-review?id=review_id
+const PutProductReview = async (req, res) => {
+  try {
+    const { id: review_id } = req.query;
+
+    const { rating, review, image } = req.body;
+
+    const data = await putProductReview(review_id, { rating, review, image });
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+// GET /visitor/:visitor_id/product-review?id=review_id
+const GetProductReview = async (req, res) => {
+  try {
+    const { id: visitor_id } = req.params;
+    const { id: review_id } = req.query;
+    let review;
+
+    if (review_id) review = await getProductReview(visitor_id, review_id);
+    else review = await getProductReviewsByVisitor(visitor_id);
+
+    res.status(200).json(review);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
 
 const GetContent = async (req, res) => {
     try {
@@ -12,15 +56,27 @@ const GetContent = async (req, res) => {
 }
 
 const PutMarketReview = async (req, res) => {
-    try {
-        const { id: review_id } = req.query;
-        const { rating, review } = req.body;
-        const data = await putMarketReview(review_id, rating, review);
-        res.status(200).json(data);
-    } catch (error) {
-        res.status(500).send(error);
-    }
-}
+  try {
+    const { id: review_id } = req.query;
+
+    const {
+      rating,
+      review,
+      image // 👈 optional
+    } = req.body;
+
+    const data = await putMarketReview(
+      review_id,
+      { rating, review, image }
+    );
+
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
 
 const GetMarketReview = async (req, res) => {
     try {
@@ -131,6 +187,9 @@ const GetVisitorVisitedMarket = async (req, res) => {
 
 
 module.exports = {
+    GetProductReviewsByVisitor,
+    PutProductReview,
+    GetProductReview,
     GetContent,
     PutMarketReview,
     GetMarketReview,

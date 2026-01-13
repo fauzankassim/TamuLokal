@@ -1,4 +1,4 @@
-import { TbGridDots, TbTicket, TbPackage, TbBuildingStore } from "react-icons/tb";
+import { TbGridDots, TbTicket, TbPackage, TbBuildingStore, TbChevronLeft } from "react-icons/tb";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
@@ -7,7 +7,6 @@ import ProductList from "../components/ProductList";
 import ProfileHamburger from "../components/ProfileHamburger";
 import MarketVisitList from "../components/MarketVisitList";
 import OrganizerMarketList from "../components/OrganizerMarketList";
-import { TbChevronLeft } from "react-icons/tb";
 
 const ProfilePage = () => {
   const session = useAuth(true);
@@ -15,19 +14,17 @@ const ProfilePage = () => {
   const { id } = useParams();
   const location = useLocation();
   const [roles, setRoles] = useState([]);
-  const [activeTab, setActiveTab] = useState("main"); // "main" is default
+  const [activeTab, setActiveTab] = useState("main");
   const [visitorPosts, setVisitorPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const base_url = import.meta.env.VITE_BACKEND_API_URL;
   const visitor_id = id || session?.user?.id;
-  // Fetch visitor posts if viewing a visitor profile
+
   useEffect(() => {
     if (!visitor_id) return;
-
     const fetchVisitorPosts = async () => {
       setLoadingPosts(true);
       try {
-
         const res = await fetch(`${base_url}/visitor/${visitor_id}/post`);
         if (!res.ok) throw new Error("Failed to fetch visitor posts");
         const data = await res.json();
@@ -39,11 +36,8 @@ const ProfilePage = () => {
         setLoadingPosts(false);
       }
     };
-
     fetchVisitorPosts();
   }, [id, base_url, visitor_id]);
-
-  console.log(visitorPosts);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -57,42 +51,65 @@ const ProfilePage = () => {
         setRoles([]);
       }
     };
-
     fetchRoles();
   }, [session, base_url]);
 
-  if (!session) return null;
+  
 
-  // Detect role from pathname
+
   const path = location.pathname;
   const roleMatch = path.match(/\/(vendor|visitor|organizer)\//);
   let role = roleMatch ? roleMatch[1] : null;
 
-  // If on /profile, use role from fetched roles
   if (path === "/profile") {
     if (roles.includes("Vendor")) role = "vendor";
     else if (roles.includes("Organizer")) role = "organizer";
     else role = "visitor";
   }
 
-  const isOwnProfile = path === "/profile" || (!id ? true : id === session.user.id);
+  const isOwnProfile = path === "/profile" || (!id ? true : id === session?.user?.id);
+  
+useEffect(() => {
+  if (!session?.user) return;
+  if (!id) return; // no visited profile
+  if (isOwnProfile) return; // skip own profile
 
-  const handleBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate("/");
-  };
+const registerProfileClick = async () => {
+  try {
+    await fetch(`${base_url}/user/${id}/click`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        viewer_id: session.user.id,
+      }),
+    });
+  } catch (err) {
+    console.error("[Profile Click] Error:", err);
+  }
+};
 
-  // Tab icons depending on role
+  registerProfileClick();
+  console.log("here");
+}, [id, isOwnProfile, session, base_url]);
+
+  if (!session) return null;
   const roleTabIcon = {
     visitor: { icon: TbTicket, key: "visited" },
     vendor: { icon: TbPackage, key: "products" },
     organizer: { icon: TbBuildingStore, key: "markets" },
   };
 
+  // Filter only posts of type 1
+  const visitorPostItems = Array.isArray(visitorPosts)
+    ? visitorPosts.filter((post) => post.type === 1)
+    : [];
+
   return (
     <div className="relative flex flex-col items-center min-h-screen bg-[#FFFDFA] font-inter">
       {/* Top Bar */}
-      <div className="absolute top-4 w-full px-4 flex justify-between items-center">
+      <div className="absolute top-4 w-full px-4 md:px-8 flex justify-between items-center">
         {!isOwnProfile ? (
           <div className="flex items-center gap-3">
             <button
@@ -103,57 +120,52 @@ const ProfilePage = () => {
             </button>
           </div>
         ) : (
-          <div /> // empty spacer for layout balance
+          <div />
         )}
-
         {isOwnProfile && <ProfileHamburger />}
       </div>
 
       {/* Profile Content */}
-      <div className="w-full max-w-md mt-14 px-4 py-6">
+      <div className="w-full max-w-5xl mt-16 px-4 md:px-8 pb-10">
         <ProfileInformation
           userId={id || session.user.id}
-          role={role}
           isOwnProfile={isOwnProfile}
         />
 
         <hr className="mt-6 border-gray-200" />
 
-        {/* ===== Tab Bar ===== */}
-      <div className="flex justify-around mb-4 border-b border-gray-200 py-2">
-        {/* Main Tab */}
-        <button
-          onClick={() => setActiveTab("main")}
-          className={`flex-1 flex justify-center py-2 ${
-            activeTab === "main" ? "text-orange-500" : "text-gray-400"
-          }`}
-        >
-          <TbGridDots size={24} />
-        </button>
-
-        {/* Role-specific Tab (only show if NOT own profile) */}
-        {!isOwnProfile && role && roleTabIcon[role] && (
-          <button
-            onClick={() => setActiveTab(roleTabIcon[role].key)}
-            className={`flex-1 flex justify-center py-2 ${
-              activeTab === roleTabIcon[role].key ? "text-orange-500" : "text-gray-400"
-            }`}
-          >
-            {React.createElement(roleTabIcon[role].icon, { size: 24 })}
-          </button>
+        {/* Tabs (hidden for own profile) */}
+        {!isOwnProfile && (
+          <div className="flex justify-center mb-6 border-b border-gray-200 py-3 gap-2">
+            <button
+              onClick={() => setActiveTab("main")}
+              className={`flex-1 max-w-[200px] flex justify-center py-2 rounded-md ${
+                activeTab === "main" ? "text-orange-500 bg-orange-50" : "text-gray-400"
+              }`}
+            >
+              <TbGridDots size={22} />
+            </button>
+            {role && roleTabIcon[role] && (
+              <button
+                onClick={() => setActiveTab(roleTabIcon[role].key)}
+                className={`flex-1 max-w-[200px] flex justify-center py-2 rounded-md ${
+                  activeTab === roleTabIcon[role].key ? "text-orange-500 bg-orange-50" : "text-gray-400"
+                }`}
+              >
+                {React.createElement(roleTabIcon[role].icon, { size: 22 })}
+              </button>
+            )}
+          </div>
         )}
-      </div>
 
-
-        {/* ===== Visitor Posts Grid ===== */}
-        {activeTab === "main" && visitorPosts.length > 0 && (
-          <div className="mt-4 grid grid-cols-2">
-            {visitorPosts.map((post) => (
+        {/* Visitor Posts Grid (only type 1) */}
+        {activeTab === "main" && visitorPostItems.length > 0 && (
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
+            {visitorPostItems.map((post) => (
               <div
                 key={post.id}
-                className="w-full aspect-square overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer"
+                className="w-full aspect-square overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer rounded-lg bg-white"
                 onClick={() => {
-                  // optional: navigate to post detail or market
                   console.log("Clicked post:", post.id);
                 }}
               >
@@ -168,15 +180,21 @@ const ProfilePage = () => {
         )}
 
         {role === "visitor" && activeTab === "visited" && (
-          <MarketVisitList visitorId={id || session.user.id} />
+          <div className="mt-6">
+            <MarketVisitList visitorId={id || session.user.id} />
+          </div>
         )}
 
         {role === "vendor" && activeTab === "products" && (
-          <ProductList vendorId={id || session.user.id} isOwnProfile={isOwnProfile} />
+          <div className="mt-6">
+            <ProductList vendorId={id || session.user.id} isOwnProfile={isOwnProfile} />
+          </div>
         )}
 
         {role === "organizer" && activeTab === "markets" && (
-          <OrganizerMarketList organizerId={id || session.user.id} />
+          <div className="mt-6">
+            <OrganizerMarketList organizerId={id || session.user.id} />
+          </div>
         )}
       </div>
     </div>

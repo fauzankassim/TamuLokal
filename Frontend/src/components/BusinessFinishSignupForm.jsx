@@ -6,6 +6,7 @@ const BusinessFinishSignupForm = ({ onChange, user_id }) => {
   const [formData, setFormData] = useState({
     profilePicture: null,
     username: "",
+    password: "",
   });
 
   const handleFileChange = (e) => {

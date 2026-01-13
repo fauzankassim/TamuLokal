@@ -1,5 +1,35 @@
-const { getOrganizers, getOrganizerMarketById, putOrganizerImageById, getOrganizerProfileById, postOrganizer, putOrganizerProfileById} = require('../services/organizers')
+const { deleteOrganizer, putVerification, getVerification, getOrganizers, getOrganizerMarketById, putOrganizerImageById, getOrganizerProfileById, postOrganizer, putOrganizerProfileById} = require('../services/organizers')
 
+const DeleteOrganizer = async (req, res) => {
+    try {
+        const { id: organizer_id } = req.params;
+        const organizer = await deleteOrganizer(organizer_id);
+        res.status(200).json(organizer);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+const PutVerification = async (req, res) => {
+    try {
+        const { id: organizer_id } = req.params;
+        const { verified } = req.query;
+        const verification = await putVerification(organizer_id, verified);
+        res.status(200).json(verification);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
+const GetVerification = async (req, res) => {
+    try {
+        const { id: organizer_id } = req.params;
+        const verification = await getVerification(organizer_id);
+        res.status(200).json(verification);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
 const GetOrganizers = async (req, res) => {
     try {
         const organizers = await getOrganizers();
@@ -65,6 +95,9 @@ const PutOrganizerProfileById = async (req, res) => {
 }
 
 module.exports = {
+    DeleteOrganizer,
+    PutVerification,
+    GetVerification,
     GetOrganizers,
     GetOrganizerMarketById,
     PutOrganizerProfileById,

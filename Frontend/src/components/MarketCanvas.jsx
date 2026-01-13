@@ -335,7 +335,7 @@ export default function MarketCanvas({ marketId, stalls, isVendor=false, session
     <div className="relative w-full h-full flex">
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-move border border-gray-300 rounded-lg"
+        className="w-full h-full cursor-move rounded-lg"
         style={{ touchAction: "none" }}
       />
       {/* Arrow icons */}

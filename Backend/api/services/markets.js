@@ -1,21 +1,96 @@
-const { supabase } = require('../../db')
+const puppeteer = require('puppeteer');
+const { supabase } = require('../../db');
 
+const deleteMarket = async (market_id) => {
+  const { data, error } = await supabase
+    .from("market")
+    .delete()
+    .eq("id", market_id);
+
+    console.log(error);
+}
+
+const putMarketReview = async (market_id, review_id, review) => {
+    const { data, error } = await supabase
+        .from("market_review")
+        .update(review)
+        .eq("market_id", market_id)
+        .eq("id", review_id)
+        .single();
+
+    return data;
+}
+
+const putVerification = async(market_id, status) => {
+  const { data, error } = await supabase
+    .from("market_applications")
+    .update({status})
+    .eq("market_id", market_id)
+    .single();
+
+  return data;
+}
+
+const getVerification = async (market_id, organizer_id) => {
+  const { data, error } = await supabase
+    .from("market_applications")
+    .select("status")
+    .eq("market_id", market_id)
+    .eq("organizer_id", organizer_id)
+    .single();
+
+  return data;
+}
+
+const downloadMarketStatistic = async (market_id) => {
+  const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+
+    const frontendReportUrl = `http://localhost:5173/business/market/${market_id}/statistic-download`;
+
+  await page.goto(frontendReportUrl, { waitUntil: 'networkidle0' });
+
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' },
+  });
+
+  await browser.close();
+
+  return pdfBuffer;
+}
+const postMarketClick = async (viewer_id, market_id) => {
+  const { data, error } = await supabase
+    .from("market_click")
+    .insert({viewer_id, market_id})
+}
 const postMarketspace = async (marketspaces) => {
-  console.log(marketspaces);
+
   const { data, error } = await supabase
     .from("space")
     .insert(marketspaces)
     .select();
 
-    console.log(data);
 
   return data;
+}
+
+const deleteMarketspace = async (space_id) => {
+  const { data, error } = await supabase
+    .from("space")
+    .delete()
+    .eq("id", space_id);
+
+    console.log(error);
+
 }
 
 const getMarketAdmin = async () => {
   const { data, error } = await supabase.rpc("get_markets_as_admin");
 
-  console.log(error);
   return data;
 }
 
@@ -36,7 +111,11 @@ const postMarketReview = async (market_id, visitor_id, rating, review) => {
       visitor_id,
       review,
       rating
-    });
+    })
+    .select()
+    .single();
+
+  
 
   return data;
 }
@@ -118,6 +197,14 @@ const postMarket = async (newMarket) => {
   return data;
 };
 
+const putMarketImage = async (market_id, image) => {
+  const { data, error } = await supabase
+    .from("market")
+    .update({image})
+    .eq("id", market_id)
+
+  return data;
+}
 const putMarket = async (market_id, market) => {
   // Step 1: Insert the new market row
   const { data, error } = await supabase
@@ -238,7 +325,9 @@ const postMarketBookmarkById = async (market_id, visitor_id) => {
     .insert({
       visitor_id,
       market_id
-    });
+    })
+    .select()
+    .single();
 
   return data;
 };
@@ -302,6 +391,14 @@ const postMarketVisitor = async (visitor_id, market_id) => {
 }
 
 module.exports = {
+  putVerification,
+  deleteMarket,
+  putMarketReview,
+  getVerification,
+  putMarketImage,
+  deleteMarketspace,
+  downloadMarketStatistic,
+  postMarketClick,
   postMarketspace,
   getMarketAdmin,
   getMarketStatistic,

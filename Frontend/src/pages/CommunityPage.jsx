@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { TbPlus, TbFilter } from "react-icons/tb";
 import { useAuth } from "../hooks/useAuth";
 import CommunityContentCard from "../components/CommunityContentCard";
+import CommunityForumCard from "../components/CommunityForumCard"; // NEW
 
 // Skeleton card for loading state
 const SkeletonCommunityCard = () => (
@@ -98,6 +99,7 @@ const CommunityPage = () => {
     fetchContent();
   }, [activeTab, userId, baseUrl]);
 
+  console.log(content);
   return (
     <div className="min-h-screen">
       {/* Tabs Navbar */}
@@ -156,19 +158,25 @@ const CommunityPage = () => {
               </div>
             ))
           : content.length === 0
-          ? <div className="p-4 text-[var(--gray)] w-full text-center max-w-xl">No content available.</div>
+          ? (
+            <div className="p-4 text-[var(--gray)] w-full text-center max-w-xl">
+              No content available.
+            </div>
+            )
           : content.map((item) => (
               <div key={item.id} className="w-full max-w-xl">
-                <CommunityContentCard
-                  content={item}
-                  type={activeTab === "Forum" ? "Forum" : "Post"}
-                />
+                {activeTab === "Forum" ? (
+                  <CommunityForumCard content={item} />
+                ) : (
+                  <CommunityContentCard
+                    content={item}
+                    type={activeTab === "Forum" ? "Forum" : "Post"}
+                  />
+                )}
               </div>
             ))
         }
       </div>
-
-
     </div>
   );
 };

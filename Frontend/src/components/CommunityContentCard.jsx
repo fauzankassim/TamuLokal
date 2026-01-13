@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { NavLink } from "react-router-dom";
 import { TbHeart, TbHeartFilled, TbMessageCircle, TbShare2 } from "react-icons/tb";
-import CommunityContentCommentCard from "./CommunityContentCommentCard";
 import CommunityContentCommentPopup from "./CommunityContentCommentPopup";
 
 // Helper function to format created_at
@@ -29,8 +28,7 @@ const formatDate = (dateString) => {
 
 const CommunityContentCard = ({ content, type }) => {
   const [showComments, setShowComments] = useState(false);
-  
-  const session = useAuth(); 
+  const session = useAuth();
   const userId = session?.user?.id;
 
   const [isFollowing, setIsFollowing] = useState(false);
@@ -115,10 +113,32 @@ const CommunityContentCard = ({ content, type }) => {
     }
   };
 
+  // Share
+  const handleShare = useCallback(async () => {
+    const shareUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/community/${content.content_id}`
+        : "";
+
+    const title = content.market_name || "Check this out";
+    const text = content.caption || "Have a look at this post";
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text, url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Link copied to clipboard");
+      }
+    } catch (err) {
+      console.error("Error sharing content:", err);
+    }
+  }, [content.caption, content.content_id, content.market_name]);
+
   // Check follow status
   useEffect(() => {
     if (!userId) return;
-    
+
     const checkFollowStatus = async () => {
       try {
         const response = await fetch(
@@ -199,7 +219,7 @@ const CommunityContentCard = ({ content, type }) => {
         <img
           src={content.image}
           alt={content.title}
-          className="w-full h-48 object-cover"
+          className="w-full aspect-square object-cover"
         />
       )}
 
@@ -242,16 +262,19 @@ const CommunityContentCard = ({ content, type }) => {
           <TbMessageCircle className="text-lg" /> Comment
         </button>
 
-        <button className="flex items-center gap-1 hover:text-[var(--orange)] transition">
+        <button
+          onClick={handleShare}
+          className="flex items-center gap-1 hover:text-[var(--orange)] transition"
+        >
           <TbShare2 className="text-lg" /> Share
         </button>
       </div>
 
       {/* Bottom comment popup */}
       {showComments && (
-        <CommunityContentCommentPopup 
+        <CommunityContentCommentPopup
           contentId={content.content_id}
-          onClose={() => setShowComments(false)}        
+          onClose={() => setShowComments(false)}
         />
       )}
     </div>

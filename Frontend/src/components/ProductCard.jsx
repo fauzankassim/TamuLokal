@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { TbPencil, TbEye, TbEyeOff } from "react-icons/tb";
-import { useNavigate, useParams } from "react-router-dom";
+import { TbPencil, TbEye, TbEyeOff, TbStar, TbChevronRight, TbStarFilled } from "react-icons/tb";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
@@ -9,9 +9,10 @@ const ProductCard = ({
   isOwnProfile,
   showAvailabilityToggle = false,
 }) => {
+  console.log(product);
   const navigate = useNavigate();
   const { id: spaceId } = useParams(); // marketspace id
-  
+  const location = useLocation();
   const [available, setAvailable] = useState(true);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -100,11 +101,13 @@ const ProductCard = ({
       `}
     >
       {/* Image */}
-      <img
-        src={product.image || "/default-product.png"}
-        alt={product.name}
-        className="w-full h-40 object-cover"
-      />
+      <div className="w-full aspect-square bg-gray-100">
+        <img
+          src={product.image || "/default-product.png"}
+          alt={product.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
 
       {/* Availability badge */}
       {!available && (
@@ -112,6 +115,31 @@ const ProductCard = ({
           Unavailable
         </div>
       )}
+
+      {/* Rating badge */}
+      <div
+        onClick={() => {
+          if (isOwnProfile) {
+            navigate(`/business/product/${product.id}`);
+          }
+        }}
+        className={`absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-0.5 rounded-full shadow
+          flex items-center gap-1 text-xs
+          ${isOwnProfile ? "cursor-pointer hover:bg-white" : ""}
+        `}
+      >
+        {product.review_count > 0 ? (
+          <>
+            <TbStarFilled className="text-yellow-500" size={14} />
+            <span className="font-medium text-gray-700">
+              {product.avg_rating} ({product.review_count})
+            </span>
+          </>
+        ) : (
+          <span className="text-gray-500">No reviews</span>
+        )}
+      </div>
+
 
       {/* Content */}
       <div className="p-3">
@@ -146,6 +174,16 @@ const ProductCard = ({
           className="absolute bottom-2 right-2 bg-white rounded-full p-1 shadow hover:bg-gray-100 transition"
         >
           <TbPencil className="text-gray-600" size={20} />
+        </button>
+      )}
+      {/* Review button (for non-own profile) */}
+      {!isOwnProfile && (
+        <button
+          onClick={() => navigate(`${location.pathname}/product/${product.id}`)}
+          className="absolute bottom-2 right-2 p-1 transition"
+          title="Leave a review"
+        >
+          <TbChevronRight className="text-yellow-500" size={20} />
         </button>
       )}
     </div>

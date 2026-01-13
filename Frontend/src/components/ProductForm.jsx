@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { TbPhotoPlus, TbTrash } from "react-icons/tb";
+import { TbPhotoPlus } from "react-icons/tb";
 import { supabase } from "../supabaseClient";
 
-const ProductForm = ({ product = null, vendorId, onClose }) => {
+const categories = [
+  { id: 1, name: "Fresh Produce", emoji: "🍅" },
+  { id: 2, name: "Street Food", emoji: "🍢" },
+  { id: 3, name: "Snacks & Drinks", emoji: "🧃" },
+  { id: 4, name: "Clothing", emoji: "👕" },
+  { id: 5, name: "Handicrafts", emoji: "🧵" },
+  { id: 6, name: "Fruits", emoji: "🍇" },
+  { id: 7, name: "Seafood", emoji: "🦐" },
+  { id: 8, name: "Performance", emoji: "🎷" },
+];
+
+const ProductForm = ({ product = null, category = null, vendorId, onClose }) => {
   const isEdit = !!product;
 
   const [imageFile, setImageFile] = useState(null);
@@ -13,16 +24,27 @@ const ProductForm = ({ product = null, vendorId, onClose }) => {
   const [quantityTypes, setQuantityTypes] = useState([]);
   const [quantityTypeObj, setQuantityTypeObj] = useState(null);
 
+  // New state for category tags
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
   const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
   useEffect(() => {
-    if (product) {
+    if (product && category) {
       setName(product.name || "");
       setPrice(product.price || "");
       setQuantity(product.quantity || "");
       setPreviewUrl(product.image || null);
+
+      // ✅ FIX: map category objects → array of ids
+      if (Array.isArray(category)) {
+        setSelectedCategories(category.map((c) => c.category_id));
+      }
+
+      // Keep this as-is (if backend sometimes returns product.categories)
+      if (product.categories) setSelectedCategories(product.categories);
     }
-  }, [product]);
+  }, [product, category]);
 
   useEffect(() => {
     const fetchQuantityTypes = async () => {
@@ -57,53 +79,44 @@ const ProductForm = ({ product = null, vendorId, onClose }) => {
     setPreviewUrl(null);
   };
 
+  // Category selection handler
+  const handleCategoryClick = (id) => {
+    if (selectedCategories.includes(id)) {
+      setSelectedCategories(selectedCategories.filter((c) => c !== id));
+    } else if (selectedCategories.length < 3) {
+      setSelectedCategories([...selectedCategories, id]);
+    }
+  };
+
   const handleDelete = async () => {
     if (!isEdit || !product?.id) return;
-    
-    if (!window.confirm("Are you sure you want to delete this product?")) {
-      return;
-    }
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     try {
-
       const res = await fetch(`${base_url}/product/${product.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
-      
       if (!res.ok) throw new Error("Failed to delete product");
-      
-if (product.image) {
-      try {
-        // Extract file path from URL
-        // URL example: https://jraryrxoyhdjsbojezow.supabase.co/storage/v1/object/public/tamulokal/vendors/29e7d2a0-ff80-4c2c-b583-b92d5de520aa/test.jpg
-        // We want: vendors/29e7d2a0-ff80-4c2c-b583-b92d5de520aa/test.jpg
-        
-        // Method 1: Using split
-        const url = product.image;
-        const basePath = "tamulokal/";
-        const startIndex = url.indexOf(basePath);
-        
-        if (startIndex !== -1) {
-          const filePath = url.substring(startIndex + basePath.length);
-          
-          const { error: deleteError } = await supabase.storage
-            .from("tamulokal")
-            .remove([filePath]);
-            
-          if (deleteError) {
-            console.warn("Failed to delete image from storage:", deleteError);
+
+      if (product.image) {
+        try {
+          const url = product.image;
+          const basePath = "tamulokal/";
+          const startIndex = url.indexOf(basePath);
+          if (startIndex !== -1) {
+            const filePath = url.substring(startIndex + basePath.length);
+            const { error: deleteError } = await supabase.storage
+              .from("tamulokal")
+              .remove([filePath]);
+            if (deleteError) console.warn("Failed to delete image from storage:", deleteError);
           } else {
-            console.log("Image deleted from storage:", filePath);
+            console.warn("Could not extract file path from image URL:", url);
           }
-        } else {
-          console.warn("Could not extract file path from image URL:", url);
+        } catch (storageErr) {
+          console.warn("Error deleting image from storage:", storageErr);
         }
-      } catch (storageErr) {
-        console.warn("Error deleting image from storage:", storageErr);
-        // Continue anyway - the product record is already deleted
       }
-    }
       alert("Product deleted!");
       onClose();
     } catch (err) {
@@ -116,6 +129,10 @@ if (product.image) {
     e.preventDefault();
     if (!quantityTypeObj) {
       alert("Please select a quantity type");
+      return;
+    }
+    if (selectedCategories.length === 0) {
+      alert("Please select at least 1 category");
       return;
     }
 
@@ -131,6 +148,7 @@ if (product.image) {
             price: parseFloat(price),
             quantity: parseFloat(quantity),
             quantity_type: quantityTypeObj.id,
+            categories: selectedCategories,
           }),
         });
         if (!updateRes.ok) throw new Error("Failed to update product");
@@ -146,7 +164,7 @@ if (product.image) {
             price: parseFloat(price),
             quantity: parseFloat(quantity),
             quantity_type: quantityTypeObj.id,
-            image: null,
+            categories: selectedCategories
           }),
         });
         if (!res.ok) throw new Error("Failed to add product");
@@ -155,33 +173,28 @@ if (product.image) {
       }
 
       if (imageFile) {
-        const imageBitmap = await createImageBitmap(imageFile);
-        const canvas = document.createElement("canvas");
-        canvas.width = imageBitmap.width;
-        canvas.height = imageBitmap.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(imageBitmap, 0, 0);
-        const jpegBlob = await new Promise((resolve) =>
-          canvas.toBlob(resolve, "image/jpeg", 0.9)
-        );
+        const ext = imageFile.name.split(".").pop();
+        const filePath = `vendors/${vendorId}/${productId}.${ext}`;
 
-        const filePath = `vendors/${vendorId || product.vendor_id}/${name}.jpg`;
         const { error: uploadError } = await supabase.storage
           .from("tamulokal")
-          .upload(filePath, jpegBlob, { contentType: "image/jpeg", upsert: true });
+          .upload(filePath, imageFile, { upsert: true });
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("tamulokal")
-          .getPublicUrl(filePath);
+        // 3️⃣ Get public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("tamulokal").getPublicUrl(filePath);
 
-        const imageUpdateRes = await fetch(`${base_url}/product/${productId}`, {
+        // 4️⃣ Update product with image URL
+        const imgRes = await fetch(`${base_url}/product/${productId}/image`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: publicUrl }),
         });
-        if (!imageUpdateRes.ok) throw new Error("Failed to update product image");
+
+        if (!imgRes.ok) throw new Error("Failed to update product image");
       }
 
       alert(isEdit ? "Product updated!" : "Product added!");
@@ -193,117 +206,154 @@ if (product.image) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative font-inter">
-      {/* Delete Icon - Only shown in edit mode */}
-      {isEdit && (
-        <div className="fixed top-4 right-4 z-10">
-          <button
-            type="button"
-            onClick={handleDelete}
-            aria-label="Delete product"
-          >
-            <TbTrash className="text-2xl text-red-500 hover:text-red-600 transition" />
-          </button>
-        </div>
-      )}
-      <form onSubmit={handleSubmit} className="flex-1 px-6 py-6 space-y-6 pb-28">
-
-
-      {/* Image Upload (Redesigned like CommunityPostForm) */}
-       <div className="flex justify-center">
-          <div>
-            <div
-              className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white w-40 h-40 cursor-pointer hover:border-orange-400 transition"
-              onClick={() => document.getElementById("productImage").click()}
-            >
-              {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover rounded-md"
+    <div className="min-h-screen w-full flex flex-col font-inter">
+      <form onSubmit={handleSubmit} className="flex-1 w-full px-4 md:px-8 py-6">
+        <div className="w-full max-w-5xl mx-auto space-y-6">
+          <div className="flex flex-col md:flex-row md:gap-8 md:items-stretch">
+            {/* Image Upload (left, 1/4 on desktop) */}
+            <div className="w-full md:w-1/4 md:flex md:flex-col">
+              <div
+                className="relative border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white w-full aspect-square cursor-pointer hover:border-orange-400 transition"
+                onClick={() => document.getElementById("productImage").click()}
+              >
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center text-gray-400">
+                    <TbPhotoPlus className="text-4xl mb-2" />
+                  </div>
+                )}
+                <input
+                  id="productImage"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
                 />
-              ) : (
-                <div className="flex flex-col items-center text-gray-400">
-                  <TbPhotoPlus className="text-4xl mb-2" />
-                  <span className="text-sm">Click to upload photo</span>
-                </div>
-              )}
-              <input
-                id="productImage"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-              />
+              </div>
             </div>
 
-            {/* Dynamic Label below image */}
-            <label className="block text-sm font-medium text-gray-700 mt-2 text-center cursor-pointer" onClick={() => document.getElementById("productImage").click()}>
-              {previewUrl ? "Change Image" : "Add Image"}
-            </label>
+            {/* Right column inputs; card only on desktop, match image height */}
+            <div className="w-full md:w-3/4 mt-6 md:mt-0 md:flex md:flex-col md:self-stretch">
+              <div className="flex flex-col gap-2 p-0 md:p-6 md:bg-white md:border md:border-gray-200 md:rounded-lg md:shadow-sm md:h-full">
+                <label htmlFor="productName" className="text-sm font-medium text-gray-700">
+                  Product Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Product Name"
+                  className="w-full h-[42px] border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white rounded-md"
+                  required
+                />
+                <label htmlFor="productPrice" className="text-sm font-medium text-gray-700">
+                  Price
+                </label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="Price"
+                  className="w-full h-[42px] border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white rounded-md"
+                  required
+                />
+                <label htmlFor="productQuantity" className="text-sm font-medium text-gray-700">
+                  Quantity
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    placeholder="Quantity"
+                    className="flex-1 h-[42px] border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white rounded-md"
+                    required
+                  />
+                  <select
+                    value={quantityTypeObj?.id || ""}
+                    onChange={(e) => {
+                      const selected = quantityTypes.find(
+                        (qt) => qt.id === parseInt(e.target.value)
+                      );
+                      setQuantityTypeObj(selected);
+                    }}
+                    className="w-[120px] h-[42px] border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white rounded-md"
+                    required
+                  >
+                    {quantityTypes.map((qt) => (
+                      <option key={qt.id} value={qt.id}>
+                        {qt.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Category tags input */}
+                <label className="text-sm font-medium text-gray-700 mt-4 mb-1">
+                  Category (pick up to 3)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <button
+                      type="button"
+                      key={cat.id}
+                      className={
+                        "px-3 py-1.5 rounded-full text-sm border flex items-center gap-1 transition " +
+                        (selectedCategories.includes(cat.id)
+                          ? "bg-orange-100 border-orange-500 text-orange-700 font-semibold"
+                          : "bg-white border-gray-200 text-gray-800 hover:border-orange-400")
+                      }
+                      style={{
+                        opacity:
+                          !selectedCategories.includes(cat.id) &&
+                          selectedCategories.length >= 3
+                            ? 0.6
+                            : 1,
+                        pointerEvents:
+                          !selectedCategories.includes(cat.id) &&
+                          selectedCategories.length >= 3
+                            ? "none"
+                            : "auto",
+                      }}
+                      onClick={() => handleCategoryClick(cat.id)}
+                    >
+                      <span>{cat.emoji}</span>
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+                {selectedCategories.length === 0 && (
+                  <p className="text-xs text-orange-600 mt-1">Pick at least 1 category.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons (outside the box) */}
+          <div className="flex flex-col md:flex-row md:justify-end gap-3">
+            {isEdit && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="w-full md:w-auto px-5 py-2.5 text-sm font-medium text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition"
+              >
+                Delete
+              </button>
+            )}
+            <button
+              type="submit"
+              className="w-full md:w-auto px-6 py-2.5 bg-[#FF8225] text-white rounded-md font-medium hover:bg-[#e6731f] transition"
+            >
+              {isEdit ? "Save" : "Create"}
+            </button>
           </div>
         </div>
-
-        {/* Name */}
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Product Name"
-          className="w-full h-[40px] border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
-          required
-        />
-
-        {/* Price */}
-        <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="Price"
-          className="w-full h-[40px] border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
-          required
-        />
-
-        {/* Quantity & Type */}
-        <div className="flex gap-2">
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="Quantity"
-            className="flex-1 h-[40px] border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
-            required
-          />
-          <select
-            value={quantityTypeObj?.id || ""}
-            onChange={(e) => {
-              const selected = quantityTypes.find(
-                (qt) => qt.id === parseInt(e.target.value)
-              );
-              setQuantityTypeObj(selected);
-            }}
-            className="w-[100px] h-[40px] border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
-            required
-          >
-            {quantityTypes.map((qt) => (
-              <option key={qt.id} value={qt.id}>
-                {qt.title}
-              </option>
-            ))}
-          </select>
-        </div>
       </form>
-
-      {/* Fixed Save Button */}
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 px-6 py-4">
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="w-full py-3 bg-[#FF8225] text-white rounded-md font-medium hover:bg-[#e6731f] transition"
-        >
-          {isEdit ? "Save" : "Create"}
-        </button>
-      </div>
     </div>
   );
 };

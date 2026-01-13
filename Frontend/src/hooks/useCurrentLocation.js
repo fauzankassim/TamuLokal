@@ -14,11 +14,10 @@ const useCurrentLocation = () => {
         (error) => {
             console.error("Error getting location:", error);
             // fallback to default location if user denies permission
-            setLocation([6.03391, 116.11749]); // Example: UMS
+            setLocation(null); // Example: UMS
         }
         );
     }, []);
-
 
     return location;
 };

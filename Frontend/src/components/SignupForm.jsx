@@ -222,7 +222,6 @@ const SignupForm = () => {
               provider: "google",
             });
             if (error) console.error(error);
-            console.log(data);
           }}
         >
           <FaGoogle className="text-[#DB4437]" />

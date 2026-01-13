@@ -1,4 +1,4 @@
-const { postContentCommentReply, getContentEngagement, postContentComment, getContentComment, getLikeContent, deleteLikeContent, postLikeContent, postPost, putPostImageById, getForums, getAllPosts, getFriendPosts } = require('../services/contents')
+const { postForum, postContentCommentReply, getContentEngagement, postContentComment, getContentComment, getLikeContent, deleteLikeContent, postLikeContent, postPost, putPostImageById, getForums, getAllPosts, getFriendPosts } = require('../services/contents')
 
 const PostContentCommentReply = async (req, res) => {
     try {
@@ -74,9 +74,8 @@ const PostContent = async (req, res) => {
         let content;
         if (type == "post") {
             content = await postPost(req.body);
-
         } else {
-            
+            content = await postForum(req.body);   
         }
         res.status(200).json(content);
     } catch (error) {

@@ -1,10 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { TbWorld, TbFilter, TbStarFilled, TbMapPin } from "react-icons/tb";
 import useMarket from "../hooks/useMarket";
-import { TbInfoCircle } from "react-icons/tb";
+import useCurrentLocation from "../hooks/useCurrentLocation";
 import MarketCard from "../components/MarketCard";
 import MarketCardSkeleton from "../components/MarketCardSkeleton";
-
+import { useAuth } from "../hooks/useAuth";
+import useRole from "../hooks/useRole";
 
 const categories = [
   { id: 1, name: "Fresh Produce", emoji: "🍅" },
@@ -17,123 +21,319 @@ const categories = [
   { id: 8, name: "Performance", emoji: "🎷" },
 ];
 
+const TAG_OPTIONS = ["Food", "Fresh Produce", "Handicraft", "Fashion", "Local Snack"];
+
 const HomePage = () => {
-  const { markets } = useMarket(3);
-  const [showInfo, setShowInfo] = useState(false);
-  const containerRef = useRef(null);
+  const session = useAuth(false);
+  
 
-  // Auto scroll effect
-  useEffect(() => {
-    if (!containerRef.current || !markets?.length) return;
+  const navigate = useNavigate();
 
-    let index = 0;
-    const container = containerRef.current;
+  const savedRole = localStorage.getItem("signupRole");
+  if (savedRole && session?.user?.id) {
+    localStorage.removeItem("signupRole"); // remove after reading
+    navigate(`/${savedRole}/registration`);
+  }
 
-    const interval = setInterval(() => {
-      index = (index + 1) % markets.length;
-      container.scrollTo({
-        left: container.clientWidth * index,
-        behavior: "smooth",
-      });
-    }, 3000);
+  const { markets, loading } = useMarket();
+  const currentLocation = useCurrentLocation();
 
-    return () => clearInterval(interval);
-  }, [markets]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    distance: null,
+    rating: null,
+    openNow: false,
+    tags: [],
+  });
+
+  const startTour = () => {
+  const tour = driver({
+    showProgress: true,
+    allowClose: true,
+    overlayOpacity: 0.5,
+    steps: [
+      {
+        element: "#tour-categories",
+        popover: {
+          title: "Product Categories",
+          description:
+            "Browse food, crafts, fashion, and more from local vendors by category.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: "#tour-markets",
+        popover: {
+          title: "Street Markets",
+          description:
+            "Explore nearby street markets and tamu. Filter by distance, rating, and availability.",
+          side: "top",
+          align: "start",
+        },
+      },
+    ],
+    onDestroyed: () => {
+      localStorage.setItem("home_tour_seen", "true");
+    },
+  });
+
+  tour.drive();
+};
+
+useEffect(() => {
+  const seen = localStorage.getItem("home_tour_seen");
+  if (!seen && !loading && markets?.length > 0) {
+    startTour();
+  }
+}, [loading, markets]);
+
+  const isMarketOpen = (market) => {
+    if (!market?.open_time || !market?.close_time) return false;
+    const now = new Date().getHours();
+    const open = new Date(market.open_time).getHours();
+    const close = new Date(market.close_time).getHours();
+    return open <= close ? now >= open && now <= close : now >= open || now <= close;
+  };
+
+  const safeMarkets = markets || [];
+  const filteredMarkets = safeMarkets.filter((m) => {
+    if (filters.openNow && !isMarketOpen(m)) return false;
+    if (filters.rating && m.average_rating < filters.rating) return false;
+    if (filters.distance && m.distance > filters.distance) return false;
+    if (filters.tags.length > 0 && !filters.tags.some((t) => m.tags?.includes(t))) return false;
+    return true;
+  });
+
+  const toggleTag = (tag) => {
+    setFilters((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter((t) => t !== tag)
+        : [...prev.tags, tag],
+    }));
+  };
 
   return (
-    <div className="relative h-screen">
-      <header className="w-full h-16 px-4 py-1 flex justify-between items-center bg-[var(--white)] z-20">
-        <div className="flex justify-center py-2">
-            <div className="flex items-center gap-2">
-                <img src="/tamulokal.png" alt="tamulokal" className="w-8 h-8" />
-                <h1 className="text-xl font-bold">Tamulokal</h1>
-            </div>
+    <div className="relative min-h-screen bg-[var(--white)]">
+      {/* HEADER */}
+      <header className="w-full bg-[var(--white)]">
+        <div className="w-full px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img
+              src="/tamulokal.png"
+              alt="Tamukinabalu logo"
+              className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+            />
+            <span className="text-base sm:text-xl font-semibold text-[var(--black)]">
+              TamuKinabalu
+            </span>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button
+              type="button"
+              className={`inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm hover:shadow-md border bg-[var(--white)] ${
+                currentLocation
+                  ? "border-[var(--green)] text-[var(--green)]"
+                  : "border-[var(--red)] text-[var(--red)]"
+              }`}
+              title={currentLocation ? "Location enabled" : "Location disabled"}
+            >
+              <TbMapPin className="text-sm sm:text-base" />
+              <p>{currentLocation ? "Enabled" : "Disabled"}</p>
+            </button>
+            <button
+              onClick={() => {
+                // TODO: hook up language switcher logic
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm hover:shadow-md border border-[var(--gray)] bg-[color-mix(in srgb,var(--white) 70%,transparent)] text-[var(--black)]"
+            >
+              <TbWorld className="text-base sm:text-lg" />
+              EN
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => setShowInfo(true)}
-          className="p-2 text-sm"
-        >
-          <TbInfoCircle size={28} className="text-[var(--black)]"/>
-        </button>
       </header>
 
-      {/* --- Swipable About Cards --- */}
-      <div className="w-full grid grid-cols-4 lg:grid-cols-8 gap-3 px-4 py-4">
-        {categories.map((cat) => (
-          <NavLink
-            key={cat.id}
-            to={`/category/${cat.id}`} // Pass category ID
-            className="bg-[var(--white)] rounded-xl shadow-sm border border-[var(--gray)] flex flex-col items-center justify-center aspect-square hover:border-[var(--orange)] hover:shadow-md transition"
-          >
-            <span className="text-2xl mb-1">{cat.emoji}</span>
-            <span className="text-xs font-medium text-[var(--black)] text-center px-1">
-              {cat.name}
-            </span>
-          </NavLink>
-        ))}
-      </div>
-
-
-      {/* --- Market Section Title --- */}
-      <div className="px-4 mt-4 flex justify-between items-center">
-        <h2 className="font-semibold text-lg text-[var(--black)]">Explore Tamu</h2>
-        <NavLink
-          to="/market"
-          className="text-sm text-[var(--orange)] font-medium hover:underline"
-        >
-          View All
-        </NavLink>
-      </div>
-
-      {/* --- Horizontal Market Cards --- */}
-<div className="px-4 w-full mt-2">
-  <div
-    ref={containerRef}
-    className={`
-      flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth
-      no-scrollbar
-      lg:overflow-visible lg:justify-between
-    `}
-    style={{ scrollSnapType: "x mandatory" }}
-  >
-    {!markets?.length
-      ? Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="snap-start flex-shrink-0 w-[90vw] lg:w-[32%]"
-          >
-            <MarketCardSkeleton />
+      <main className="max-w-6xl mx-auto w-full pt-4 pb-24">
+        {/* Section: Product Categories */}
+        <div id="tour-categories" className="px-4 pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--orange)]">
+                Product Categories
+              </p>
+              <p className="text-sm text-[var(--gray)] max-w-2xl mt-1">
+                Browse by category to quickly find food, crafts, fashion, and more from local vendors.
+              </p>
+            </div>
           </div>
-        ))
-      : markets.map((market) => (
-          <div
-            key={market.id}
-            className="snap-start flex-shrink-0 w-[90vw] lg:w-[32%]"
-          >
-            <MarketCard market={market} />
+
+          <div className="w-full grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 mt-4">
+            {categories.map((cat) => (
+              <NavLink
+                key={cat.id}
+                to={`/category/${cat.id}`}
+                className="
+                  bg-[var(--white)] rounded-xl shadow-sm border border-[var(--gray)]
+                  flex flex-col items-center justify-center
+                  aspect-square
+                  hover:border-[var(--orange)] hover:shadow-md transition
+                "
+              >
+                <span className="text-2xl mb-1">{cat.emoji}</span>
+                <span className="text-xs font-medium text-[var(--black)] text-center px-1">
+                  {cat.name}
+                </span>
+              </NavLink>
+            ))}
           </div>
-        ))}
-  </div>
-</div>
+        </div>
 
+        {/* Section: Street Markets / Tamu */}
+        <div id="tour-markets" className="px-4 mt-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--orange)]">
+                Street Markets
+              </p>
+              <p className="text-sm text-[var(--gray)] max-w-2xl mt-1">
+                Filter by distance, ratings, what’s open now, and tags to find the perfect market to visit.
+              </p>
+            </div>
 
-      {/* --- Info Overlay --- */}
-      {showInfo && (
-        <div className="fixed inset-0 bg-[var(--black)] bg-opacity-40 flex items-center justify-center z-[70]">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-4/5 max-w-md">
-            <h3 className="font-semibold text-lg mb-2 text-center">How to Use TamuLokal</h3>
-            <ul className="text-sm text-gray-700 space-y-1">
-              <li>• Browse available night markets near you</li>
-              <li>• Swipe feature cards to learn more features</li>
-              <li>• Tap markets for vendor details & directions</li>
-              <li>• Save your favorite markets to revisit easier</li>
-            </ul>
-            <button
-              onClick={() => setShowInfo(false)}
-              className="mt-4 w-full bg-gray-800 text-white py-2 rounded-lg"
-            >
-              Close
-            </button>
+            <div className="grid grid-cols-1 sm:flex sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setIsFilterOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-full bg-[var(--orange)] text-white text-sm font-semibold shadow-sm hover:shadow-md transition border border-[var(--orange)]"
+              >
+                <TbFilter size={16} />
+                Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Market List (grid) */}
+          <div className="mt-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              {!loading && filteredMarkets.length === 0 && (
+                <p className="text-gray-600 text-center col-span-full">
+                  No markets found with selected filters.
+                </p>
+              )}
+
+              {loading
+                ? Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="w-full h-[350px]">
+                      <MarketCardSkeleton height={350} />
+                    </div>
+                  ))
+                : filteredMarkets.map((market) => (
+                    <div key={market.id} className="w-full h-[350px]">
+                      <MarketCard market={market} height={350} />
+                    </div>
+                  ))}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Filter Overlay */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[80] flex items-end justify-center lg:items-stretch lg:justify-start">
+          <div className="bg-white w-full max-w-xl rounded-t-2xl p-6 shadow-lg lg:h-full lg:max-w-md lg:rounded-none lg:rounded-r-2xl lg:shadow-2xl lg:overflow-y-auto">
+            {/* Top bar */}
+            <div className="flex justify-between items-center mb-4">
+              <button
+                onClick={() =>
+                  setFilters({ distance: null, rating: null, openNow: false, tags: [] })
+                }
+                className="text-sm text-gray-500 font-medium"
+              >
+                Reset
+              </button>
+              <h3 className="text-lg font-semibold">Filter</h3>
+              <button
+                onClick={() => setIsFilterOpen(false)}
+                className="text-sm text-[var(--orange)] font-medium"
+              >
+                Apply
+              </button>
+            </div>
+
+            {/* Distance Slider */}
+            <div className="mb-5">
+              <p className="font-medium mb-2">
+                Distance {filters.distance ? `( ${filters.distance} km )` : "Any"}
+              </p>
+              <input
+                type="range"
+                min={5}
+                max={20}
+                step={5}
+                value={filters.distance || 20}
+                onChange={(e) => setFilters({ ...filters, distance: Number(e.target.value) })}
+                className="w-full accent-orange-500"
+              />
+            </div>
+
+            {/* Rating Slider */}
+            <div className="mb-5">
+              <p className="font-medium mb-2 flex items-center gap-1">
+                Rating
+                {filters.rating ? (
+                  <span className="flex items-center gap-0.5">
+                    ( {filters.rating} <TbStarFilled className="text-yellow-400" /> )
+                  </span>
+                ) : (
+                  " Any"
+                )}
+              </p>
+              <input
+                type="range"
+                min={1}
+                max={5}
+                step={1}
+                value={filters.rating || 1}
+                onChange={(e) => setFilters({ ...filters, rating: Number(e.target.value) })}
+                className="w-full accent-orange-500"
+              />
+            </div>
+
+            {/* Open Only Toggle */}
+            <div className="mb-5 flex items-center justify-between">
+              <p className="font-medium mb-0">Open Only</p>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.openNow}
+                  onChange={() => setFilters({ ...filters, openNow: !filters.openNow })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-300 rounded-full peer peer-checked:bg-orange-500 transition-colors" />
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform" />
+              </label>
+            </div>
+
+            {/* Tags */}
+            <div className="mb-2">
+              <p className="font-medium mb-2">Tags</p>
+              <div className="flex flex-wrap gap-2">
+                {TAG_OPTIONS.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => toggleTag(tag)}
+                    className={`px-3 py-1 rounded-full text-xs border ${
+                      filters.tags.includes(tag)
+                        ? "bg-orange-500 text-white border-orange-500"
+                        : "bg-white text-gray-700 border-gray-300"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}

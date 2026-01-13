@@ -7,6 +7,8 @@ import useRole from '../hooks/useRole';
 
 import MarketCanvas from '../components/MarketCanvas';
 import MarketspaceApplicantCard from '../components/MarketspaceApplicantCard';
+import Spinner from '../components/Spinner';
+import Header from '../components/Header';
 
 const MarketSpacePage = () => {
   const session = useAuth(true);
@@ -80,11 +82,7 @@ const MarketSpacePage = () => {
     fetchStalls();
   }, [id]);
   
-  if (loading) return (
-    <div className="flex items-center justify-center h-96">
-      <div className="animate-spin h-12 w-12 border-b-2 border-blue-500"></div>
-    </div>
-  );
+  if (loading) return <Spinner loading={loading} />;
   if (error) return <div>Error: {error}</div>;
 
   console.log(stalls);
@@ -116,20 +114,7 @@ const MarketSpacePage = () => {
   console.log(selectedStall);
   return (
     <div className="w-screen h-screen flex flex-col relative">
-      <div className="px-4 py-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/")}
-            className="text-gray-700 hover:text-orange-500 transition"
-          >
-            <TbChevronLeft className="text-2xl" />
-          </button>
-
-          <h1 className="text-xl font-semibold text-gray-800">
-            Market Space
-          </h1>
-        </div>
-      </div>
+      <Header title={"Market Space"} />
 
       <main className={`flex-1 flex ${showPlan ? 'overflow-hidden' : 'overflow-auto'}`}>
         {showPlan ? (

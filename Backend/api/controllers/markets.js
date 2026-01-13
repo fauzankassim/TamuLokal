@@ -1,4 +1,99 @@
-const { postMarketspace, getMarketAdmin, getMarketStatistic, postMarketReview, getMarketspace, putMarket, deleteMarketSchedule, getMarketSchedule, postMarketSchedule, postMarketVisitor, getMarketVendors, getMarketRatings, getMarketReview, getMarketSpaceById, deleteMarketBookmarkById, postMarketBookmarkById, getMarketBookmarkById, deleteMarketLikeById, postMarketLikeById, getMarketLikeById, getMarkets, getMarketById, postMarket } = require('../services/markets')
+const { putVerification, deleteMarket, putMarketReview, getVerification, putMarketImage, deleteMarketspace, downloadMarketStatistic, postMarketClick, postMarketspace, getMarketAdmin, getMarketStatistic, postMarketReview, getMarketspace, putMarket, deleteMarketSchedule, getMarketSchedule, postMarketSchedule, postMarketVisitor, getMarketVendors, getMarketRatings, getMarketReview, getMarketSpaceById, deleteMarketBookmarkById, postMarketBookmarkById, getMarketBookmarkById, deleteMarketLikeById, postMarketLikeById, getMarketLikeById, getMarkets, getMarketById, postMarket } = require('../services/markets')
+
+
+const PutVerification = async (req, res) => {
+  try {
+    const { id: market_id } = req.params;
+    const { status } = req.query;
+
+    const verification = await putVerification(market_id, status);
+    res.status(200).json(verification);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+const DeleteMarket = async (req, res) => {
+  try {
+    const { id: market_id } = req.params;
+    const market = await deleteMarket(market_id);
+    res.status(200).json(market);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+const PutMarketReview = async (req, res) => {
+    try {
+        const { id: market_id } = req.params;
+        const { id: review_id } = req.query;
+        const data = req.body;
+        const review = await putMarketReview(market_id, review_id, data);
+        res.status(200).json(review);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+const GetVerification = async (req, res) => {
+  try {
+    const { id: market_id } = req.params;
+    const { organizer_id } = req.query;
+    const verification = await getVerification(market_id, organizer_id);
+    res.status(200).json(verification);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
+
+const PutMarketImage = async (req, res) => {
+  try {
+    const { id: market_id } = req.params;
+    const { image } = req.body;
+    const market = await putMarketImage(market_id, image);
+    res.status(200).json(market);
+  } catch (error) {
+    res.status(500).send(error)
+  }
+}
+
+const DeleteMarketspace = async (req, res) => {
+  try {
+    const { space_id } = req.query;
+    const space = await deleteMarketspace(space_id);
+    res.status(200).json(space);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+
+}
+const DownloadMarketStatistic = async (req, res) => {
+  const { id: market_id } = req.params;
+  try {
+    // Generate PDF buffer from service
+    const pdfBuffer = await downloadMarketStatistic(market_id);
+
+    // Set headers for download
+    const filename = `market-statistic.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error('[DownloadMarketStatistic]', err);
+    res.status(500).json({ error: 'Failed to generate PDF' });
+  }
+}
+
+const PostMarketClick = async (req, res) => {
+  try {
+    const { id: market_id } = req.params;
+    const { viewer_id } = req.body;
+    const click = await postMarketClick(viewer_id, market_id);
+    res.status(200).json(click);
+  } catch (error) { 
+    res.status(500).send(error);
+  }
+}
 
 const PostMarketspace = async (req, res) => {
   try {
@@ -242,7 +337,7 @@ const GetMarketBookmarkById = async (req, res) => {
 const PostMarketBookmarkById = async (req, res) => {
   try {
     const market_id = req.params.id;
-    const visitor_id = req.query.visitor_id; 
+    const { visitor_id }= req.body;
 
     const market = await postMarketBookmarkById(market_id, visitor_id);
     res.status(200).json(market);
@@ -254,7 +349,7 @@ const PostMarketBookmarkById = async (req, res) => {
 const DeleteMarketBookmarkById = async (req, res) => {
   try {
     const market_id = req.params.id;
-    const visitor_id = req.query.visitor_id; 
+    const { visitor_id }= req.body;
 
     const market = await deleteMarketBookmarkById(market_id, visitor_id);
     res.status(200).json(market);
@@ -267,6 +362,14 @@ const DeleteMarketBookmarkById = async (req, res) => {
 
 
 module.exports = {
+  PutVerification,
+  DeleteMarket,
+  PutMarketReview,
+GetVerification,
+  PutMarketImage,
+  DeleteMarketspace,
+  DownloadMarketStatistic,
+  PostMarketClick,
   PostMarketspace,
   GetMarketAdmin,
   GetMarketStatistic,

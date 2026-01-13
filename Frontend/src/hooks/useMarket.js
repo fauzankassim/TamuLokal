@@ -25,7 +25,6 @@ useEffect(() => {
       setError(null);
 
       const { lat, lng } = locationToUse;
-      console.log(lat);
 
       let url = `${base_url}/market?user_latitude=${lat}&user_longitude=${lng}`;
       if (limit) url += `&limit=${limit}`;

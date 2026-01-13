@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const NotificationCard = ({ notif }) => {
   const navigate = useNavigate();
   const createdAt = new Date(notif.created_at + "Z");
-
+  console.log(notif);
   const handleClick = async () => {
     // Mark as read if not already
     if (!notif.is_read) {
@@ -27,6 +27,9 @@ const NotificationCard = ({ notif }) => {
     if (notif.market_id) {
       navigate(`/market/${notif.market_id}`);
     }
+    if (notif.event_id == 1) {
+      navigate('/market/history');
+    } 
   };
 
   return (

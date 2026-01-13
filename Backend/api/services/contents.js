@@ -71,11 +71,18 @@ const getFriendPosts = async (id) => {
     return data;
 }
 
-const getForums = async () => {
+const postForum = async (content) => {
     const { data, error } = await supabase
         .from("content")
-        .select("*")
-        .eq("type.type", "Forum");
+        .insert([content])
+        .select()
+        .single();
+
+        console.log(error);
+    return data;
+}
+const getForums = async () => {
+    const { data, error } = await supabase.rpc("get_all_content_forums")
     
     return data;
 }
@@ -102,6 +109,7 @@ const putPostImageById = async(id, image) => {
 }
 
 module.exports = {
+    postForum,
     postContentCommentReply,
     getContentEngagement,
     postContentComment,

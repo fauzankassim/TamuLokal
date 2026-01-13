@@ -10,18 +10,6 @@ import { useAuth } from "../hooks/useAuth";
 // ✅ Import reusable distance util
 import { getDistanceMeters } from "../utils/calculateMarketDistance";
 
-// ⭐ Helper to check same day
-function isSameDay(date1, date2) {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  );
-}
-
 export default function LocationWatcher() {
   const { location: globalLocation, setLocation } = useLocationData();
   const routerLocation = useLocation();
@@ -35,14 +23,12 @@ export default function LocationWatcher() {
 
     navigator.geolocation.getCurrentPosition(pos => {
       const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      //console.log("[LocationWatcher] initial global location:", coords);
       setLocation(coords);
     });
 
     const interval = setInterval(() => {
       navigator.geolocation.getCurrentPosition(pos => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        //console.log("[LocationWatcher] updating global location:", coords);
         setLocation(coords);
       });
     }, 60000);
@@ -50,7 +36,7 @@ export default function LocationWatcher() {
     return () => clearInterval(interval);
   }, [routerLocation.pathname, setLocation]);
 
-  // ⭐ Check distance + operating hours + daily check-in
+  // ⭐ Check distance + daily check-in (DB-enforced)
   useEffect(() => {
     if (!globalLocation || !markets?.length || !session?.user) return;
 
@@ -66,17 +52,7 @@ export default function LocationWatcher() {
           market.longitude
         );
 
-        //console.log(`[LocationWatcher] Distance to ${market.name}: ${dist}m`);
-
         if (dist <= RADIUS) {
-          // ⭐ LocalStorage: skip if already checked in today
-          const lastCheckin = localStorage.getItem(`checkin_${market.id}`);
-          if (lastCheckin && isSameDay(lastCheckin, new Date())) {
-
-            continue;
-          }
-
-          // ⭐ POST to /market/:id/visit
           try {
             const res = await fetch(
               `${import.meta.env.VITE_BACKEND_API_URL}/market/${market.id}/visit`,
@@ -88,15 +64,9 @@ export default function LocationWatcher() {
             );
 
             const data = await res.json();
-            //console.log("[CheckIn] Response:", data);
 
-            const createdAt = data?.created_at;
-
-            if (createdAt) {
-              // ⭐ Save last check-in timestamp
-              localStorage.setItem(`checkin_${market.id}`, createdAt);
-
-              // ⭐ Trigger popup
+            if (data?.created_at) {
+              // ⭐ Trigger popup only when a new visit is created
               setActiveMarket(market);
             }
           } catch (err) {
