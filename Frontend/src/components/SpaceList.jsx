@@ -12,7 +12,7 @@ const SpaceList = ({ marketId }) => {
       try {
         const res = await fetch(`${base_url}/market/${marketId}/space`);
         const data = await res.json();
-        console.log(data);
+
         if (res.ok) setSpaces(data);
         else console.error(data);
       } catch (err) {

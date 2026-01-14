@@ -68,12 +68,13 @@ const postMarketClick = async (viewer_id, market_id) => {
     .insert({viewer_id, market_id})
 }
 const postMarketspace = async (marketspaces) => {
-
+  console.log(marketspaces);
   const { data, error } = await supabase
     .from("space")
     .insert(marketspaces)
     .select();
 
+    console.log(error);
 
   return data;
 }

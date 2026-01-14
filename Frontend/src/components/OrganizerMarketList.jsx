@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import OrganizerMarketCard from "./OrganizerMarketCard";
 import { TbPlus } from "react-icons/tb";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import Spinner from "./Spinner";
 const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
-const OrganizerMarketList = ({ organizerId, isOwnProfile = true }) => {
+
+const OrganizerMarketList = ({ organizerId, isOwnProfile = false }) => {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -30,12 +31,27 @@ const OrganizerMarketList = ({ organizerId, isOwnProfile = true }) => {
   }, [organizerId]);
 
   if (loading) return <Spinner loading={true}/>
-
+  
   return (
     <div className="flex flex-col gap-3 pb-12">
-      {markets.map((market) => (
-        <OrganizerMarketCard key={market.id} market={market} isOwnProfile={isOwnProfile} />
-      ))}
+      {markets
+  .filter(
+    (market) =>
+      isOwnProfile || market.application_status !== null
+  )
+  .map((market) => (
+    <NavLink
+      key={market.id}
+      to={`/market/${market.id}`}
+      className="block"
+    >
+      <OrganizerMarketCard
+        market={market}
+        isOwnProfile={isOwnProfile}
+      />
+    </NavLink>
+))}
+
     </div>
   );
 };

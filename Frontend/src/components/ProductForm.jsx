@@ -13,6 +13,13 @@ const categories = [
   { id: 8, name: "Performance", emoji: "🎷" },
 ];
 
+const STATIC_QUANTITY_TYPES = [
+  { id: 1, title: "pcs" },
+  { id: 2, title: "kg" },
+  { id: 3, title: "g" },
+  { id: 4, title: "unit" },
+  { id: 5, title: "bag" },
+];
 const ProductForm = ({ product = null, category = null, vendorId, onClose }) => {
   const isEdit = !!product;
 
@@ -21,7 +28,8 @@ const ProductForm = ({ product = null, category = null, vendorId, onClose }) => 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [quantityTypes, setQuantityTypes] = useState([]);
+  const [quantityTypes] = useState(STATIC_QUANTITY_TYPES);
+
   const [quantityTypeObj, setQuantityTypeObj] = useState(null);
 
   // New state for category tags
@@ -47,25 +55,16 @@ const ProductForm = ({ product = null, category = null, vendorId, onClose }) => 
   }, [product, category]);
 
   useEffect(() => {
-    const fetchQuantityTypes = async () => {
-      try {
-        const res = await fetch(`${base_url}/product/qtype`);
-        if (!res.ok) throw new Error("Failed to fetch quantity types");
-        const data = (await res.json()) || [];
-        setQuantityTypes(data);
+  if (product) {
+    const currentType = STATIC_QUANTITY_TYPES.find(
+      (qt) => qt.id === product.quantity_type
+    );
+    setQuantityTypeObj(currentType || STATIC_QUANTITY_TYPES[0]);
+  } else {
+    setQuantityTypeObj(STATIC_QUANTITY_TYPES[0]);
+  }
+}, [product]);
 
-        if (product) {
-          const currentType = data.find((qt) => qt.id === product.quantity_type);
-          setQuantityTypeObj(currentType || data[0] || null);
-        } else {
-          setQuantityTypeObj(data[0] || null);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchQuantityTypes();
-  }, [base_url, product]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

@@ -12,7 +12,7 @@ import { useAuth } from "../hooks/useAuth";
 
 const MarketPage = () => {
   const location = useCurrentLocation();
-  const session = useAuth(true);
+  const session = useAuth(false);
   const userId = session?.user?.id;
   const { id } = useParams();
   const navigate = useNavigate();
@@ -23,7 +23,6 @@ const MarketPage = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const base_url = import.meta.env.VITE_BACKEND_API_URL;
-
   useEffect(() => {
     const fetchMarket = async () => {
       try {
@@ -225,6 +224,7 @@ const MarketPage = () => {
                   userLng={location[1]}
                   marketLat={market.latitude}
                   marketLng={market.longitude}
+                  marketId={id}
                   isOpen={openDropdown === "distance"}
                   onToggle={() =>
                     setOpenDropdown(openDropdown === "distance" ? null : "distance")

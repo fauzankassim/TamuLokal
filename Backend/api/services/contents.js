@@ -61,6 +61,7 @@ const postLikeContent = async (content_id, visitor_id) => {
 const getAllPosts = async () => {
     const { data, error } = await supabase.rpc("get_all_content_posts");
     
+    console.log(error);
     return data;
 }
 

@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { useNavigate } from "react-router-dom";
 import {
   TbUsers,
@@ -18,7 +20,11 @@ const statsConfig = [
 ];
 
 const LandingPage = () => {
+  const { t, i18n } = useTranslation();
+const changeLanguage = (lng) => i18n.changeLanguage(lng);
+
   const navigate = useNavigate();
+  localStorage.setItem("isHello", "true");
   const [stats, setStats] = useState(statsConfig.map(() => 0));
   const [hasAnimated, setHasAnimated] = useState(false);
   const statsRef = useRef(null);
@@ -78,14 +84,13 @@ const LandingPage = () => {
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
-              onClick={() => {
-                // TODO: hook up language switcher logic
-              }}
+              onClick={() => changeLanguage(i18n.language === "en" ? "ms" : "en")}
               className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm hover:shadow-md border border-[var(--gray)] bg-[color-mix(in srgb,var(--white) 70%,transparent)] text-[var(--black)]"
             >
               <TbWorld className="text-base sm:text-lg" />
-              EN
+              {i18n.language === "en" ? "EN" : "MS"}
             </button>
+
           </div>
         </div>
       </header>
@@ -103,12 +108,14 @@ const LandingPage = () => {
         />
         <div className="max-w-4xl mx-auto relative">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-[var(--black)]">
-            Your Tamu Adventure
-            <span className="text-[var(--orange)]"> Starts Here</span>
+            {t("Your Tamu Adventure")}
+            <span className="text-[var(--orange)]"> {t("Starts Here")}</span>
           </h1>
 
           <p className="mt-4 md:mt-6 max-w-2xl mx-auto text-base md:text-lg text-[var(--black)]">
-            Discover street markets near you in Kota Kinabalu—check what’s happening today, navigate easily, and plan your visit before you arrive.
+            {t(
+              "Discover street markets near you in Kota Kinabalu—check what’s happening today, navigate easily, and plan your visit before you arrive."
+            )}
           </p>
 
           <div className="mt-8 flex justify-center gap-3">
@@ -116,13 +123,13 @@ const LandingPage = () => {
               onClick={scrollToFeatures}
               className="px-7 py-3 rounded-full text-sm font-semibold transition shadow-sm hover:shadow-md inline-flex items-center justify-center gap-2 border border-[var(--orange)] text-[var(--orange)] bg-[color-mix(in srgb,var(--white) 80%,transparent)]"
             >
-              Learn More
+              {t("Learn More")}
             </button>
             <button
               onClick={() => navigate("/")}
               className="px-7 py-3 rounded-full text-sm font-semibold transition shadow-md hover:shadow-lg inline-flex items-center justify-center gap-2 bg-[var(--orange)] text-[var(--white)]"
             >
-              Explore Now
+              {t("Explore Now")}
             </button>
           </div>
         </div>
@@ -136,31 +143,35 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto w-full">
           <div className="text-center mb-10">
             <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--orange)]">
-              Features
+              {t("Features")}
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--black)] mt-2">
-              Designed for visitors exploring Kota Kinabalu
+              {t("Designed for visitors exploring Kota Kinabalu")}
             </h2>
             <p className="mt-3 text-[var(--gray)] max-w-3xl mx-auto">
-              Find the best Tamu nearby, see what’s live right now, and plan your route before you head out.
+              {t(
+                "Find the best Tamu nearby, see what’s live right now, and plan your route before you head out."
+              )}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FeatureCard
               icon={<TbMapPin size={32} />}
-              title="Find nearby markets"
-              desc="See Tamu around you with distance and open/close times at a glance."
+              title={t("Find nearby markets")}
+              desc={t("See Tamu around you with distance and open/close times at a glance.")}
             />
             <FeatureCard
               icon={<TbCompass size={32} />}
-              title="Navigate easily"
-              desc="One-tap directions to markets, optimized for walking or driving."
+              title={t("Navigate easily")}
+              desc={t("One-tap directions to markets, optimized for walking or driving.")}
             />
             <FeatureCard
               icon={<TbMessageCircle size={32} />}
-              title="Engage with others"
-              desc="Share your posts, tips, and join forum discussions with other market-goers."
+              title={t("Engage with others")}
+              desc={t(
+                  "Share your posts, tips, and join forum discussions with other market-goers."
+                )}
             />
           </div>
         </div>
@@ -174,14 +185,15 @@ const LandingPage = () => {
         <div className="max-w-5xl mx-auto w-full">
           <div className="text-center mb-12">
             <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--orange)]">
-              By the Numbers
+              {t("By the Numbers")}
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--black)] mt-2">
-              A thriving community of markets, vendors, and products
+              {t("A thriving community of markets, vendors, and products")}
             </h2>
             <p className="mt-3 text-[var(--gray)] max-w-2xl mx-auto">
-              Real-time snapshots of Tamukinabalu’s ecosystem—growing every day to help
-              visitors discover, vendors thrive, and organizers succeed.
+              {t(
+                "Real-time snapshots of Tamukinabalu’s ecosystem—growing every day to help visitors discover, vendors thrive, and organizers succeed."
+              )}
             </p>
           </div>
 
@@ -195,7 +207,7 @@ const LandingPage = () => {
                   {item.icon}
                 </div>
                 <div className="text-lg font-semibold text-[var(--black)]">
-                  {item.label}
+                  {t(item.label)}
                 </div>
                 <div className="text-4xl md:text-5xl font-extrabold text-[var(--black)]">
                   {stats[idx].toLocaleString()}
@@ -210,37 +222,36 @@ const LandingPage = () => {
       <section className="min-h-screen snap-start flex items-center px-6 bg-[color-mix(in srgb,var(--black) 5%, transparent)] pt-24 pb-16">
         <div className="max-w-5xl mx-auto w-full text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--orange)]">
-            Partner with Tamukinabalu
+            {t("Partner with Tamukinabalu")}
           </p>
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--black)] mt-2">
-            Grow your presence as a Vendor or Organizer
+            {t("Grow your presence as a Vendor or Organizer")}
           </h2>
-          <p className="mt-3 text-[var(--gray)] max-w-2xl mx-auto">
-            Showcase products, manage applications, and run smoother events with our tools built for local markets.
-          </p>
-
+            {t(
+              "Showcase products, manage applications, and run smoother events with our tools built for local markets."
+            )}
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
             <JoinCard
-              title="Vendors"
+              title={t("Vendors")}
               bullets={[
-                "Apply to markets and secure spots",
-                "Showcase products and offers",
-                "Engage with visitors directly",
+                  t("Apply to markets and secure spots"),
+                  t("Showcase products and offers"),
+                  t("Engage with visitors directly"),
               ]}
-              ctaText="Join as Vendor"
+              ctaText={t("Join as Vendor")}
               onClick={() => {
                 localStorage.setItem("signupRole", "vendor");
                 navigate("/auth");
               }}
             />
             <JoinCard
-              title="Organizers"
+              title={t("Organizers")}
               bullets={[
-                "Create and manage market events",
-                "Approve vendors and assign slots",
-                "Track performance and attendance",
+                t("Create and manage market events"),
+                t("Approve vendors and assign slots"),
+                t("Track performance and attendance"),
               ]}
-              ctaText="Start as Organizer"
+              ctaText={t("Start as Organizer")}
               onClick={() => {
                 localStorage.setItem("signupRole", "organizer");
                 navigate("/auth");
@@ -267,17 +278,19 @@ const LandingPage = () => {
             🎉 Let’s Go
           </p>
           <h2 className="text-3xl md:text-4xl font-extrabold mt-2">
-            Ready to Explore?
+            {t("Ready to Explore?")}
           </h2>
           <p className="mt-3 text-base md:text-lg opacity-90">
-            Jump into Kota Kinabalu’s street markets and start your adventure today.
+            {t(
+              "Jump into Kota Kinabalu’s street markets and start your adventure today."
+            )}
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => navigate("/")}
               className="px-7 py-3 rounded-full text-sm font-semibold transition shadow-md hover:shadow-lg inline-flex items-center justify-center gap-2 bg-[var(--white)] text-[var(--orange)]"
             >
-              Explore Now
+              {t("Explore Now")}
             </button>
           </div>
         </div>
@@ -285,7 +298,7 @@ const LandingPage = () => {
 
       {/* FOOTER */}
       <footer className="text-sm py-8 px-6 text-center bg-[var(--black)] text-[var(--white)]">
-        © {new Date().getFullYear()} Tamukinabalu. All rights reserved.
+        © {new Date().getFullYear()} Tamukinabalu. {t("All rights reserved.")}
       </footer>
     </div>
   );

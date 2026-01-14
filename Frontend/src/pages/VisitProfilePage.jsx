@@ -1,16 +1,18 @@
 import { TbGridDots, TbTicket, TbPackage, TbBuildingStore, TbChevronLeft } from "react-icons/tb";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import ProfileInformation from "../components/ProfileInformation";
 import ProductList from "../components/ProductList";
 import ProfileHamburger from "../components/ProfileHamburger";
 import MarketVisitList from "../components/MarketVisitList";
 import OrganizerMarketList from "../components/OrganizerMarketList";
 
-const ProfilePage = () => {
-  const session = useAuth(true);
+const VisitProfilePage = () => {
+  const session = useAuth(false);
   const navigate = useNavigate();
+  const { id } = useParams();
+  const location = useLocation();
   const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
   const [roles, setRoles] = useState([]);
@@ -18,7 +20,7 @@ const ProfilePage = () => {
   const [visitorPosts, setVisitorPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
-  const visitor_id = session?.user?.id;
+  const visitor_id = id; // visiting profile
 
   // Fetch visitor posts
   useEffect(() => {
@@ -56,7 +58,40 @@ const ProfilePage = () => {
     fetchRoles();
   }, [session, base_url]);
 
-  const isOwnProfile = true; // always own profile
+  // Determine role based on path or roles
+  const path = location.pathname;
+  const roleMatch = path.match(/\/(vendor|visitor|organizer)\//);
+  let role = roleMatch ? roleMatch[1] : null;
+
+  if (!role) {
+    if (roles.includes("Vendor")) role = "vendor";
+    else if (roles.includes("Organizer")) role = "organizer";
+    else role = "visitor";
+  }
+
+  const isOwnProfile = path === "/profile" || (!id ? true : id === session?.user?.id);
+
+  // Register profile click
+  useEffect(() => {
+    if (!session?.user) return;
+    if (!id) return;
+    if (isOwnProfile) return;
+
+    const registerProfileClick = async () => {
+      try {
+        await fetch(`${base_url}/user/${id}/click`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ viewer_id: session.user.id }),
+        });
+      } catch (err) {
+        console.error("[Profile Click] Error:", err);
+      }
+    };
+
+    registerProfileClick();
+    console.log("here");
+  }, [id, isOwnProfile, session, base_url]);
 
   const roleTabIcon = {
     visitor: { icon: TbTicket, key: "visited" },
@@ -64,7 +99,6 @@ const ProfilePage = () => {
     organizer: { icon: TbBuildingStore, key: "markets" },
   };
 
-  // Filter only posts of type 1
   const visitorPostItems = Array.isArray(visitorPosts)
     ? visitorPosts.filter((post) => post.type === 1)
     : [];
@@ -73,7 +107,18 @@ const ProfilePage = () => {
     <div className="relative flex flex-col items-center min-h-screen bg-[#FFFDFA] font-inter">
       {/* Top Bar */}
       <div className="absolute top-4 w-full px-4 md:px-8 flex justify-between items-center">
-        <div />
+        {!isOwnProfile ? (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-[var(--black)] hover:text-[var(--orange)] transition"
+            >
+              <TbChevronLeft className="text-2xl" />
+            </button>
+          </div>
+        ) : (
+          <div />
+        )}
         {isOwnProfile && <ProfileHamburger />}
       </div>
 
@@ -83,7 +128,7 @@ const ProfilePage = () => {
 
         <hr className="mt-6 border-gray-200" />
 
-        {/* Tabs hidden for own profile */}
+        {/* Tabs */}
         {!isOwnProfile && (
           <div className="flex justify-center mb-6 border-b border-gray-200 py-3 gap-2">
             <button
@@ -94,8 +139,16 @@ const ProfilePage = () => {
             >
               <TbGridDots size={22} />
             </button>
-            {/* Role-based tab */}
-            {/* This will never render for own profile */}
+            {role && roleTabIcon[role] && (
+              <button
+                onClick={() => setActiveTab(roleTabIcon[role].key)}
+                className={`flex-1 max-w-[200px] flex justify-center py-2 rounded-md ${
+                  activeTab === roleTabIcon[role].key ? "text-orange-500 bg-orange-50" : "text-gray-400"
+                }`}
+              >
+                {React.createElement(roleTabIcon[role].icon, { size: 22 })}
+              </button>
+            )}
           </div>
         )}
 
@@ -106,9 +159,7 @@ const ProfilePage = () => {
               <div
                 key={post.id}
                 className="w-full aspect-square overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer rounded-lg bg-white"
-                onClick={() => {
-                  console.log("Clicked post:", post.id);
-                }}
+                onClick={() => console.log("Clicked post:", post.id)}
               >
                 <img
                   src={post.image}
@@ -120,10 +171,26 @@ const ProfilePage = () => {
           </div>
         )}
 
-        {/* Own profile does not show visitor/vendor/organizer tabs */}
+        {role === "visitor" && activeTab === "visited" && (
+          <div className="mt-6">
+            <MarketVisitList visitorId={visitor_id} />
+          </div>
+        )}
+
+        {role === "vendor" && activeTab === "products" && (
+          <div className="mt-6">
+            <ProductList vendorId={visitor_id} isOwnProfile={isOwnProfile} />
+          </div>
+        )}
+
+        {role === "organizer" && activeTab === "markets" && (
+          <div className="mt-6">
+            <OrganizerMarketList organizerId={visitor_id} />
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default ProfilePage;
+export default VisitProfilePage;

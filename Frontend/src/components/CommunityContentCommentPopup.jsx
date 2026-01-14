@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import CommunityContentCommentCard from "./CommunityContentCommentCard";
+import { useNavigate } from "react-router-dom";
 
 const CommunityContentCommentPopup = ({ contentId, onClose }) => {
+  const navigate = useNavigate();
   const [replyingTo, setReplyingTo] = useState("");
 
   const [replyingToCommentId, setReplyingToCommentId] = useState(""); // for POST URL
@@ -35,7 +37,12 @@ const CommunityContentCommentPopup = ({ contentId, onClose }) => {
     }, [contentId]);
 
     const handleSubmitComment = async () => {
-    if (!newComment.trim() || !userId) return;
+    if (!userId) {
+      navigate("/auth");
+      return
+    }
+    if (!newComment.trim()) return;
+
 
     try {
         if (replyingToCommentId) {

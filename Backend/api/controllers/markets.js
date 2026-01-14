@@ -44,6 +44,14 @@ const GetVerification = async (req, res) => {
   }
 }
 
+const PutMarketspace = async (req,res) => {
+  try {
+    
+    res.status(200).json();
+  } catch (error) {
+    res.status(500).send(error);
+  }
+}
 const PutMarketImage = async (req, res) => {
   try {
     const { id: market_id } = req.params;
@@ -57,9 +65,12 @@ const PutMarketImage = async (req, res) => {
 
 const DeleteMarketspace = async (req, res) => {
   try {
-    const { space_id } = req.query;
-    const space = await deleteMarketspace(space_id);
-    res.status(200).json(space);
+    const { ids } = req.body;
+    for ( space_id in ids) {
+      await deleteMarketspace(ids[space_id]);
+    }
+    
+    res.status(200).json();
   } catch (error) {
     res.status(500).send(error);
   }
@@ -362,6 +373,7 @@ const DeleteMarketBookmarkById = async (req, res) => {
 
 
 module.exports = {
+  PutMarketspace,
   PutVerification,
   DeleteMarket,
   PutMarketReview,

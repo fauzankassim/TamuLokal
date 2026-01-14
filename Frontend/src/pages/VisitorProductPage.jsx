@@ -86,41 +86,41 @@ const VisitorProductPage = ({ isOwnProfile = false }) => {
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       {/* Product card */}
       <div className="bg-white rounded-xl shadow overflow-hidden">
-        {/* Image */}
-        <div className="w-full aspect-square bg-gray-100">
-          <img
-            src={product.image || "/default-product.png"}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
+    <div className="flex flex-col md:flex-row">
+      {/* Image */}
+      <div className="w-full md:w-1/4 aspect-square flex-shrink-0">
+        <img
+          src={product.image || "/default-product.png"}
+          alt={product.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-        {/* Details */}
-        <div className="p-4 space-y-2">
-          <h1 className="text-xl font-semibold text-gray-800">
-            {product.name}
-          </h1>
-
-          <p className="text-lg font-bold text-[#FF8225]">
-            RM {product.price}
-          </p>
-
-          {/* Categories */}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {resolvedCategories.map(
-              (cat) =>
-                cat && (
-                  <span
-                    key={cat.id}
-                    className="text-xs bg-gray-100 px-2 py-1 rounded-full"
-                  >
-                    {cat.emoji} {cat.name}
-                  </span>
-                )
-            )}
-          </div>
+      {/* Details */}
+      <div className="p-4 space-y-2 flex-1">
+        <h1 className="text-xl font-semibold text-gray-800">
+          {product.name}
+        </h1>
+        <p className="text-lg font-bold text-[#FF8225]">
+          RM {product.price}
+        </p>
+        {/* Categories */}
+        <div className="flex flex-wrap gap-2 mt-2">
+          {resolvedCategories.map(
+            (cat) =>
+              cat && (
+                <span
+                  key={cat.id}
+                  className="text-xs bg-gray-100 px-2 py-1 rounded-full"
+                >
+                  {cat.emoji} {cat.name}
+                </span>
+              )
+          )}
         </div>
       </div>
+    </div>
+  </div>
 
       {/* Reviews */}
 <div className="space-y-4">
@@ -229,15 +229,17 @@ className={`relative rounded-lg p-4 pr-12 space-y-3 shadow-sm
   ))
 )}
 
+      {!isOwnProfile && (
+        <div className="mt-4">
+          <button
+            onClick={() => navigate(`${location.pathname}/review`)}
+            className="w-full bg-[#FF8225] text-white px-4 py-3 rounded-lg shadow hover:bg-orange-600 transition text-center font-medium"
+          >
+            Leave a review
+          </button>
+        </div>
+      )}
 
-<div className="mt-4">
-        <button
-          onClick={() => navigate(`${location.pathname}/review`)}
-          className="w-full bg-[#FF8225] text-white px-4 py-3 rounded-lg shadow hover:bg-orange-600 transition text-center font-medium"
-        >
-          Leave a review
-        </button>
-      </div>
 </div>
     </div>
   </div>

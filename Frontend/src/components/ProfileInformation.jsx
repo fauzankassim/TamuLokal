@@ -18,7 +18,7 @@ const ProfileInformation = ({ userId, isOwnProfile = true }) => {
 
   const session = useAuth();
   const currentUserId = session?.user?.id;
-  console.log(profile);
+
   useEffect(() => {
     if (!userId) return;
 

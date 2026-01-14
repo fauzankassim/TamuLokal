@@ -10,7 +10,7 @@ const MarketVisitList = ({ visitorId }) => {
       try {
         const res = await fetch(`${base_url}/visitor/${visitorId}/market-history`);
         const data = await res.json();
-        console.log(data);
+
         setMarkets(data || []);
       } catch (err) {
         console.error("Error fetching visited markets:", err);
@@ -22,7 +22,6 @@ const MarketVisitList = ({ visitorId }) => {
     fetchVisitedMarkets();
   }, [visitorId]);
 
-  console.log(markets);
 
   if (loading) {
     return <p className="text-center text-gray-500">Loading markets...</p>;

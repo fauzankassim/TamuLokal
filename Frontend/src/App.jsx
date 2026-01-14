@@ -41,6 +41,7 @@ import VisitorProductPage from './pages/VisitorProductPage';
 import VisitorProductReviewActionPage from './pages/VisitorProductReviewActionPage';
 import VisitorProductReviewPage from './pages/VisitorProductReviewPage';
 import VendorProductReviewPage from './pages/VendorProductReviewPage';
+import VisitProfilePage from './pages/VisitProfilePage';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -80,11 +81,11 @@ const router = createBrowserRouter(
 
       <Route path='/product-review' element={<VisitorProductReviewPage />}/>
       <Route path='/product-review/:review_id' element={<VisitorProductReviewActionPage />}/>
-      <Route path='/vendor/:id' element={<ProfilePage />}/>
+      <Route path='/vendor/:id' element={<VisitProfilePage />}/>
       <Route path='/vendor/:vendor_id/product/:product_id' element={<VisitorProductPage />}/>
       <Route path='/vendor/:vendor_id/product/:product_id/review' element={<VisitorProductReviewActionPage />}/>
-      <Route path='/visitor/:id' element={<ProfilePage />}/>
-      <Route path='/organizer/:id' element={<ProfilePage />}/>
+      <Route path='/visitor/:id' element={<VisitProfilePage />}/>
+      <Route path='/organizer/:id' element={<VisitProfilePage />}/>
 
       <Route path='/business/vendor/:vendor_id/statistic' element={<VendorStatisticPage />}/>
       <Route path='/business/vendor/:vendor_id/statistic-download' element={<VendorStatisticReport />}/>
@@ -94,6 +95,7 @@ const router = createBrowserRouter(
       <Route path='/business/market/:id/edit' element={<MarketActionPage />}/>
       <Route path='/business/market/:id/plan' element={<MarketFloorPlanPage />}/>
       <Route path='/business/market/:id/space' element={<MarketSpacePage />}/>
+      <Route path='/business/market/:id/edit-plan' element={<MarketFloorPlanPage edit={true}/>}/>
       <Route path='/business/market/:market_id/review' element={<BusinessMarketReviewPage />}/>
       <Route path='/business/market/:market_id/statistic' element={<BusinessMarketStatisticPage />}/>
       <Route path='/business/market/:market_id/statistic-download' element={<BusinessMarketStatisticReport />}/>

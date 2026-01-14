@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { TbPlus, TbFilter } from "react-icons/tb";
 import { useAuth } from "../hooks/useAuth";
@@ -43,17 +43,18 @@ const CommunityPage = () => {
   const [loading, setLoading] = useState(true);
 
   const tabs = ["Explore", "Following", "Forum"];
-  const filters = ["Latest", "Popular", "Nearby"];
+  const filters = ["Latest", "Popular"];
   const navigate = useNavigate();
-  const session = useAuth();
+  const session = useAuth(false);
   const userId = session?.user?.id;
 
   const baseUrl = import.meta.env.VITE_BACKEND_API_URL;
-
+  
   const handleNewContent = () => {
-    if (activeTab === "Forum") {
+    if (!userId) navigate("/auth");
+    if (activeTab === "Forum" && userId) {
       navigate("/community/add?type=forum");
-    } else {
+    } else if (activeTab !== "Forum" && userId) {
       navigate("/community/add?type=post");
     }
   };
@@ -99,7 +100,22 @@ const CommunityPage = () => {
     fetchContent();
   }, [activeTab, userId, baseUrl]);
 
-  console.log(content);
+  // 🔹 Sort content based on filter
+const filteredContent = useMemo(() => {
+  if (!content) return [];
+
+  const sorted = [...content];
+
+  if (filter === "Latest") {
+    sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  } else if (filter === "Popular") {
+    // sort by likes, assume item.likes is the count of likes
+    sorted.sort((a, b) => (b.total_likes || 0) - (a.total_likes || 0));
+  }
+
+  return sorted;
+}, [content, filter]);
+
   return (
     <div className="min-h-screen">
       {/* Tabs Navbar */}
@@ -163,7 +179,7 @@ const CommunityPage = () => {
               No content available.
             </div>
             )
-          : content.map((item) => (
+          : filteredContent.map((item) => (
               <div key={item.id} className="w-full max-w-xl">
                 {activeTab === "Forum" ? (
                   <CommunityForumCard content={item} />

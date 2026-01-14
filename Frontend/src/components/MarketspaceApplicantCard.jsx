@@ -37,7 +37,7 @@ const MarketspaceApplicantCard = ({ application }) => {
     fetchVendor();
   }, [application?.vendor_id]);
 
-  console.log(vendor);
+
 
   return (
     <div className="border rounded p-3 flex justify-between items-center">

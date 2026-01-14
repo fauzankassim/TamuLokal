@@ -8,7 +8,7 @@ import useCurrentLocation from "../hooks/useCurrentLocation";
 import MarketCard from "../components/MarketCard";
 import MarketCardSkeleton from "../components/MarketCardSkeleton";
 import { useAuth } from "../hooks/useAuth";
-import useRole from "../hooks/useRole";
+import { useTranslation } from "react-i18next";
 
 const categories = [
   { id: 1, name: "Fresh Produce", emoji: "🍅" },
@@ -24,10 +24,15 @@ const categories = [
 const TAG_OPTIONS = ["Food", "Fresh Produce", "Handicraft", "Fashion", "Local Snack"];
 
 const HomePage = () => {
+  const { t, i18n } = useTranslation();
+  const changeLanguage = (lng) => i18n.changeLanguage(lng);
+    const navigate = useNavigate();
   const session = useAuth(false);
-  
+  const isHello = localStorage.getItem("isHello");
 
-  const navigate = useNavigate();
+  if (!isHello) window.location.href = "/hello";
+
+
 
   const savedRole = localStorage.getItem("signupRole");
   if (savedRole && session?.user?.id) {
@@ -55,9 +60,9 @@ const HomePage = () => {
       {
         element: "#tour-categories",
         popover: {
-          title: "Product Categories",
+          title: t("Product Categories"),
           description:
-            "Browse food, crafts, fashion, and more from local vendors by category.",
+            t("Browse food, crafts, fashion, and more from local vendors by category."),
           side: "bottom",
           align: "start",
         },
@@ -65,9 +70,9 @@ const HomePage = () => {
       {
         element: "#tour-markets",
         popover: {
-          title: "Street Markets",
+          title: t("Street Markets"),
           description:
-            "Explore nearby street markets and tamu. Filter by distance, rating, and availability.",
+            t("Explore nearby street markets and tamu. Filter by distance, rating, and availability."),
           side: "top",
           align: "start",
         },
@@ -140,16 +145,14 @@ useEffect(() => {
               title={currentLocation ? "Location enabled" : "Location disabled"}
             >
               <TbMapPin className="text-sm sm:text-base" />
-              <p>{currentLocation ? "Enabled" : "Disabled"}</p>
+              <p>{currentLocation ? t("Enabled") : t("Disabled")}</p>
             </button>
             <button
-              onClick={() => {
-                // TODO: hook up language switcher logic
-              }}
+              onClick={() => changeLanguage(i18n.language === "en" ? "ms" : "en")}
               className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition shadow-sm hover:shadow-md border border-[var(--gray)] bg-[color-mix(in srgb,var(--white) 70%,transparent)] text-[var(--black)]"
             >
               <TbWorld className="text-base sm:text-lg" />
-              EN
+              {i18n.language === "en" ? "EN" : "MS"}
             </button>
           </div>
         </div>
@@ -161,10 +164,12 @@ useEffect(() => {
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--orange)]">
-                Product Categories
+                {t("Product Categories")}
               </p>
               <p className="text-sm text-[var(--gray)] max-w-2xl mt-1">
-                Browse by category to quickly find food, crafts, fashion, and more from local vendors.
+                {t(
+                  "Browse by category to quickly find food, crafts, fashion, and more from local vendors."
+                )}
               </p>
             </div>
           </div>
@@ -183,7 +188,7 @@ useEffect(() => {
               >
                 <span className="text-2xl mb-1">{cat.emoji}</span>
                 <span className="text-xs font-medium text-[var(--black)] text-center px-1">
-                  {cat.name}
+                   {t(cat.name)}
                 </span>
               </NavLink>
             ))}
@@ -195,10 +200,12 @@ useEffect(() => {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[var(--orange)]">
-                Street Markets
+                {t("Street Markets")}
               </p>
               <p className="text-sm text-[var(--gray)] max-w-2xl mt-1">
-                Filter by distance, ratings, what’s open now, and tags to find the perfect market to visit.
+                {t(
+                  "Filter by distance, ratings, what’s open now, and tags to find the perfect market to visit."
+                )}
               </p>
             </div>
 
@@ -208,7 +215,7 @@ useEffect(() => {
                 className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-full bg-[var(--orange)] text-white text-sm font-semibold shadow-sm hover:shadow-md transition border border-[var(--orange)]"
               >
                 <TbFilter size={16} />
-                Filters
+                {t("Filters")}
               </button>
             </div>
           </div>
@@ -218,7 +225,7 @@ useEffect(() => {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               {!loading && filteredMarkets.length === 0 && (
                 <p className="text-gray-600 text-center col-span-full">
-                  No markets found with selected filters.
+                  {t("No markets found with selected filters.")}
                 </p>
               )}
 
@@ -250,21 +257,22 @@ useEffect(() => {
                 }
                 className="text-sm text-gray-500 font-medium"
               >
-                Reset
+                {t("Reset")}
               </button>
-              <h3 className="text-lg font-semibold">Filter</h3>
+              <h3 className="text-lg font-semibold">{t("Filter")}</h3>
               <button
                 onClick={() => setIsFilterOpen(false)}
                 className="text-sm text-[var(--orange)] font-medium"
               >
-                Apply
+                {t("Apply")}
               </button>
             </div>
 
             {/* Distance Slider */}
             <div className="mb-5">
               <p className="font-medium mb-2">
-                Distance {filters.distance ? `( ${filters.distance} km )` : "Any"}
+                {t("Distance")}{" "}
+                {filters.distance ? `( ${filters.distance} km )` : t("Any")}
               </p>
               <input
                 type="range"
@@ -280,13 +288,13 @@ useEffect(() => {
             {/* Rating Slider */}
             <div className="mb-5">
               <p className="font-medium mb-2 flex items-center gap-1">
-                Rating
+                {t("Rating")}
                 {filters.rating ? (
                   <span className="flex items-center gap-0.5">
                     ( {filters.rating} <TbStarFilled className="text-yellow-400" /> )
                   </span>
                 ) : (
-                  " Any"
+                  ` ${t("Any")}`
                 )}
               </p>
               <input
@@ -302,7 +310,7 @@ useEffect(() => {
 
             {/* Open Only Toggle */}
             <div className="mb-5 flex items-center justify-between">
-              <p className="font-medium mb-0">Open Only</p>
+              <p className="font-medium mb-0">{t("Open Only")}</p>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
@@ -317,7 +325,7 @@ useEffect(() => {
 
             {/* Tags */}
             <div className="mb-2">
-              <p className="font-medium mb-2">Tags</p>
+              <p className="font-medium mb-2">{t("Tags")}</p>
               <div className="flex flex-wrap gap-2">
                 {TAG_OPTIONS.map((tag) => (
                   <button
@@ -329,7 +337,7 @@ useEffect(() => {
                         : "bg-white text-gray-700 border-gray-300"
                     }`}
                   >
-                    {tag}
+                    {t(tag)}
                   </button>
                 ))}
               </div>

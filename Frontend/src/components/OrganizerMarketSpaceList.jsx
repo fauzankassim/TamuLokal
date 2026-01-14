@@ -20,7 +20,7 @@ const OrganizerMarketSpaceList = ({ organizerId }) => {
         const res = await fetch(`${base_url}/marketspace?organizer_id=${organizerId}`);
         const data = await res.json();
         setMarkets(data);
-        console.log(markets);
+
       } catch (err) {
         console.error("Error fetching markets:", err);
         setMarkets([]);

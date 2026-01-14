@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import MarketVendorCard from "./MarketVendorCard";
+import { NavLink } from "react-router-dom";
 
 const MarketVendorList = ({ marketId }) => {
   const [vendors, setVendors] = useState([]);
@@ -32,9 +33,16 @@ const MarketVendorList = ({ marketId }) => {
 
   return (
     <div className="grid grid-cols-2 gap-4 p-4">
-      {vendors.map((vendor) => (
-        <MarketVendorCard key={vendor.vendor_id} vendor={vendor} />
-      ))}
+        {vendors.map((vendor) => (
+          <NavLink
+            key={vendor.vendor_id}
+            to={`/vendor/${vendor.vendor_id}`}
+            className="block"
+          >
+            <MarketVendorCard vendor={vendor} />
+          </NavLink>
+        ))}
+
     </div>
   );
 };

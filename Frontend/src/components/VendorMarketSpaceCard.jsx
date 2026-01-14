@@ -26,7 +26,7 @@ const VendorMarketSpaceCard = ({ space }) => {
       }
 
       const data = await response.json();
-      console.log(data);
+
       // Optional: handle response if needed
       // const data = await response.json();
     } catch (error) {

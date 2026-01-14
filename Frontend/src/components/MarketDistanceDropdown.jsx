@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { TbChevronUp, TbChevronDown, TbMapPin } from "react-icons/tb";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -17,11 +18,19 @@ const MarketDistanceDropdown = ({
   onToggle,
   markerSize = 40,
 }) => {
+  const navigate = useNavigate();
   const mapRef = useRef(null);
   const mapId = `market-map-${marketLat}-${marketLng}`; // unique ID for multiple maps
 
   const { distance, loading } = useDistance(marketLat, marketLng);
-
+const createUserDot = () =>
+  L.divIcon({
+    html: `<div class="rounded-full bg-[#FF8225] border-2 border-white" style="width:16px; height:16px;"></div>`,
+    className: "",
+    iconSize: [16, 16],
+    iconAnchor: [8, 8], // center the dot
+    popupAnchor: [0, -8],
+  });
   useEffect(() => {
     if (!isOpen || !userLat || !userLng || !marketLat || !marketLng) return;
 
@@ -40,7 +49,7 @@ const MarketDistanceDropdown = ({
     }).addTo(map);
 
     // Add default user marker
-    L.marker([userLat, userLng]).addTo(map).bindPopup("You");
+    
 
     // Function to create custom circular DivIcon
     const createCircularIcon = (iconUrl) =>
@@ -60,27 +69,35 @@ const MarketDistanceDropdown = ({
     // Fit map to show both points
     const bounds = L.latLngBounds([userLat, userLng], [marketLat, marketLng]);
     map.fitBounds(bounds, { padding: [50, 50] });
+// Custom user location circle
+L.circle([userLat, userLng], {
+  radius: 8,              // radius in meters, adjust for visibility
+  color: "#FF8225",       // border color
+  fillColor: "#FF8225",   // fill color
+  fillOpacity: 1,
+}).addTo(map);
 
     // Add route with default start marker and custom end marker
-    L.Routing.control({
-      waypoints: [
-        L.latLng(userLat, userLng),
-        L.latLng(marketLat, marketLng)
-      ],
-      lineOptions: { styles: [{ color: "#FF8225", weight: 4 }] },
-      show: false,
-      addWaypoints: false,
-      draggableWaypoints: false,
-      routeWhileDragging: false,
-      fitSelectedRoutes: false,
-      createMarker: (i, waypoint) => {
-        if (i === 0) {
-          return L.marker(waypoint.latLng);
-        } else {
-          return L.marker(waypoint.latLng, { icon: createCircularIcon(tamulokal) });
-        }
-      },
-    }).addTo(map);
+L.Routing.control({
+  waypoints: [
+    L.latLng(userLat, userLng),
+    L.latLng(marketLat, marketLng)
+  ],
+  lineOptions: { styles: [{ color: "#FF8225", weight: 4 }] },
+  show: false,
+  addWaypoints: false,
+  draggableWaypoints: false,
+  routeWhileDragging: false,
+  fitSelectedRoutes: false,
+  createMarker: (i, waypoint) => {
+    if (i === 0) {
+      return L.marker([userLat, userLng], { icon: createUserDot() }).addTo(map);
+    } else {
+      return L.marker(waypoint.latLng, { icon: createCircularIcon(tamulokal) });
+    }
+  },
+}).addTo(map);
+
 
   }, [isOpen, userLat, userLng, marketLat, marketLng, markerSize]);
 
@@ -114,7 +131,9 @@ const MarketDistanceDropdown = ({
           <div id={mapId} className="h-64 w-full rounded-lg shadow-sm" />
           <button
             className="bg-[#FF8225] text-white rounded-xl text-sm font-medium hover:bg-[#e6731f] transition-colors w-full h-[35px]"
-            onClick={() => console.log("Get Direction clicked")}
+            onClick={() =>
+              navigate("/map")
+            }
           >
             Get Direction
           </button>

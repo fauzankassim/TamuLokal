@@ -9,7 +9,7 @@ const ProductCard = ({
   isOwnProfile,
   showAvailabilityToggle = false,
 }) => {
-  console.log(product);
+
   const navigate = useNavigate();
   const { id: spaceId } = useParams(); // marketspace id
   const location = useLocation();

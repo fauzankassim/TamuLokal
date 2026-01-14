@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const NotificationCard = ({ notif }) => {
   const navigate = useNavigate();
   const createdAt = new Date(notif.created_at + "Z");
-  console.log(notif);
+
   const handleClick = async () => {
     // Mark as read if not already
     if (!notif.is_read) {

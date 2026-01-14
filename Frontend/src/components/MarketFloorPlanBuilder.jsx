@@ -1,44 +1,45 @@
 import React, { useRef, useState, useEffect } from "react";
-import { TbPlus, TbFlag, TbTrash, TbDeviceFloppy, TbX } from "react-icons/tb";
-import { useNavigate, useParams } from "react-router-dom";
-
-/**
- * MarketFloorPlanBuilder
- * -----------------------
- * Grid-based infinite floor plan builder inspired by draw.io
- * - Each 1x1 grid cell = 1 stall unit
- * - Organizer can draw stalls by click-drag / touch-drag
- * - Supports pan, zoom, snap-to-grid
- * - Mobile-friendly (pinch zoom, two-finger pan)
- * - LEFT TOOLBAR:
- *   • Add stalls
- *   • Delete stalls
- *   • Set single starting point (unique)
- */ 
+import { TbPlus, TbTrash, TbDeviceFloppy, TbHandMove } from "react-icons/tb";
 
 const GRID_SIZE = 40;
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 2.5;
 
-export default function MarketFloorPlanBuilder() {
-  const navigate = useNavigate();
-  const { id: market_id } = useParams();
+export default function MarketFloorPlanBuilder({ 
+  edit = false, 
+  existingStalls = [], 
+  marketId,
+  onSave 
+}) {
   const canvasRef = useRef(null);
   const lastTouchDistance = useRef(null);
-  const base_url = import.meta.env.VITE_BACKEND_API_URL;
-  const [mode, setMode] = useState("add"); // add | delete | start
-  const [stalls, setStalls] = useState([]); // {x,y,w,h,type}
-  const [startPoint, setStartPoint] = useState(null); // single cell
-
+  
+  const [mode, setMode] = useState("add"); // "add" | "delete" | "free"
+  const [stalls, setStalls] = useState([]);
   const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 1 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState(null);
   const [drawing, setDrawing] = useState(null);
+  const [showFeePopup, setShowFeePopup] = useState(false);
+  const [feeInput, setFeeInput] = useState("");
+
+  /* ============================
+   * Initialize with existing stalls when in edit mode
+   * ============================ */
+  useEffect(() => {
+    if (edit && existingStalls.length > 0) {
+      setStalls(existingStalls);
+      
+      if (canvasRef.current && existingStalls.length > 0) {
+        const ctx = canvasRef.current.getContext("2d");
+        fitToView(ctx, existingStalls);
+      }
+    }
+  }, [edit, existingStalls]);
 
   /* ============================
    * Utilities
    * ============================ */
-
   const snap = (v) => Math.floor(v / GRID_SIZE) * GRID_SIZE;
 
   const screenToWorld = (sx, sy) => {
@@ -60,11 +61,34 @@ export default function MarketFloorPlanBuilder() {
   const cellKey = (x, y) => `${x},${y}`;
 
   /* ============================
-   * Drawing
+   * Fit to view function
    * ============================ */
+  const fitToView = (ctx, stallsToFit) => {
+    if (!stallsToFit || stallsToFit.length === 0) return;
 
+    let minX = Math.min(...stallsToFit.map((s) => s.x));
+    let minY = Math.min(...stallsToFit.map((s) => s.y));
+    let maxX = Math.max(...stallsToFit.map((s) => s.x)) + GRID_SIZE;
+    let maxY = Math.max(...stallsToFit.map((s) => s.y)) + GRID_SIZE;
+
+    const padding = 2 * GRID_SIZE;
+
+    const initialCamera = {
+      x: minX - (ctx.canvas.width - (maxX - minX + padding * 2)) / 2 / camera.zoom,
+      y: minY - (ctx.canvas.height - (maxY - minY + padding * 2)) / 2 / camera.zoom,
+      zoom: 1,
+    };
+    
+    setCamera(initialCamera);
+  };
+
+  /* ============================
+   * Drawing functions
+   * ============================ */
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
 
     const resize = () => {
@@ -76,7 +100,7 @@ export default function MarketFloorPlanBuilder() {
     resize();
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
-  }, [camera, stalls, drawing, startPoint]);
+  }, [camera, stalls, drawing]);
 
   const drawGrid = (ctx) => {
     const { width, height } = ctx.canvas;
@@ -103,46 +127,38 @@ export default function MarketFloorPlanBuilder() {
     }
   };
 
-const drawStalls = (ctx) => {
-  stalls.forEach((s, index) => {
-    const x = (s.x - camera.x) * camera.zoom;
-    const y = (s.y - camera.y) * camera.zoom;
-    const size = GRID_SIZE * camera.zoom;
+  const drawStalls = (ctx) => {
+    stalls.forEach((s, index) => {
+      const x = (s.x - camera.x) * camera.zoom;
+      const y = (s.y - camera.y) * camera.zoom;
+      const size = GRID_SIZE * camera.zoom;
 
-    // Stall box
-    ctx.fillStyle = "#4ade80";
-    ctx.strokeStyle = "#166534";
-    ctx.fillRect(x, y, size, size);
-    ctx.strokeRect(x, y, size, size);
+      let fillColor = "#4ade80"; // Default green for new stalls
+      
+      if (edit && s.id) {
+        fillColor = "#60a5fa"; // Blue for existing
+      }
 
-    // Stall number
-    ctx.fillStyle = "#064e3b";
-    ctx.font = `${12 * camera.zoom}px sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const totalDigits = String(stalls.length).length;
-    const label = String(index + 1).padStart(totalDigits, "0");
+      ctx.fillStyle = fillColor;
+      ctx.strokeStyle = edit && s.id ? "#1d4ed8" : "#166534";
+      ctx.lineWidth = edit && s.id ? 2 : 1;
+      ctx.fillRect(x, y, size, size);
+      ctx.strokeRect(x, y, size, size);
 
-    ctx.fillText(label, x + size / 2, y + size / 2);
-  });
-};
-
-  const drawStartPoint = (ctx) => {
-    if (!startPoint) return;
-
-    ctx.fillStyle = "#f97316"; // orange
-    ctx.fillRect(
-      (startPoint.x - camera.x) * camera.zoom,
-      (startPoint.y - camera.y) * camera.zoom,
-      GRID_SIZE * camera.zoom,
-      GRID_SIZE * camera.zoom
-    );
+      ctx.fillStyle = "#064e3b";
+      ctx.font = `${12 * camera.zoom}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      
+      const label = s.lot || String(index + 1).padStart(String(stalls.length).length, "0");
+      ctx.fillText(label, x + size / 2, y + size / 2);
+    });
   };
 
   const drawPreview = (ctx) => {
-    if (!drawing) return;
+    if (!drawing || mode === "free") return;
 
-    ctx.fillStyle = "rgba(59,130,246,0.4)";
+    ctx.fillStyle = mode === "add" ? "rgba(59,130,246,0.4)" : "rgba(239,68,68,0.4)";
     ctx.fillRect(
       (drawing.x - camera.x) * camera.zoom,
       (drawing.y - camera.y) * camera.zoom,
@@ -155,36 +171,34 @@ const drawStalls = (ctx) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     drawGrid(ctx);
     drawStalls(ctx);
-    drawStartPoint(ctx);
     drawPreview(ctx);
   };
 
   /* ============================
-   * Input Handlers (shared)
+   * Input Handlers
    * ============================ */
-
   const applyAt = (x, y) => {
+    if (mode === "free") return; // No building/deleting in free mode
+
     const sx = snap(x);
     const sy = snap(y);
     const key = cellKey(sx, sy);
 
     if (mode === "add") {
-      setStalls((prev) =>
-        prev.some((s) => cellKey(s.x, s.y) === key)
-          ? prev
-          : [...prev, { x: sx, y: sy }]
-      );
+      setStalls((prev) => {
+        const existing = prev.find((s) => cellKey(s.x, s.y) === key);
+        if (existing) return prev;
+        
+        return [...prev, { 
+          x: sx, 
+          y: sy,
+          ...(existingStalls.find(s => cellKey(s.x, s.y) === key) || {})
+        }];
+      });
     }
 
     if (mode === "delete") {
       setStalls((prev) => prev.filter((s) => cellKey(s.x, s.y) !== key));
-      if (startPoint && cellKey(startPoint.x, startPoint.y) === key) {
-        setStartPoint(null);
-      }
-    }
-
-    if (mode === "start") {
-      setStartPoint({ x: sx, y: sy });
     }
 
     setDrawing({ x: sx, y: sy });
@@ -193,9 +207,9 @@ const drawStalls = (ctx) => {
   /* ============================
    * Mouse Events
    * ============================ */
-
   const onMouseDown = (e) => {
-    if (e.button === 1) {
+    // Middle click or free mode for panning
+    if (e.button === 1 || mode === "free") {
       setIsPanning(true);
       setPanStart({ x: e.clientX, y: e.clientY, cam: { ...camera } });
       return;
@@ -213,12 +227,15 @@ const drawStalls = (ctx) => {
       return;
     }
 
-    if (!drawing) return;
+    if (!drawing || mode === "free") return;
     const { x, y } = screenToWorld(e.clientX, e.clientY);
     applyAt(x, y);
   };
 
-  const onMouseUp = () => setDrawing(null);
+  const onMouseUp = () => {
+    setDrawing(null);
+    setIsPanning(false);
+  };
 
   const onWheel = (e) => {
     e.preventDefault();
@@ -232,16 +249,15 @@ const drawStalls = (ctx) => {
   /* ============================
    * Touch Events
    * ============================ */
-
   const onTouchStart = (e) => {
     e.preventDefault();
 
-    if (e.touches.length === 1) {
+    if (e.touches.length === 1 && mode !== "free") {
       const { x, y } = touchToWorld(e.touches[0]);
       applyAt(x, y);
     }
 
-    if (e.touches.length === 2) {
+    if (e.touches.length === 2 || mode === "free") {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       lastTouchDistance.current = Math.hypot(dx, dy);
@@ -258,12 +274,12 @@ const drawStalls = (ctx) => {
   const onTouchMove = (e) => {
     e.preventDefault();
 
-    if (e.touches.length === 1 && drawing) {
+    if (e.touches.length === 1 && drawing && mode !== "free") {
       const { x, y } = touchToWorld(e.touches[0]);
       applyAt(x, y);
     }
 
-    if (e.touches.length === 2 && panStart) {
+    if ((e.touches.length === 2 || mode === "free") && panStart) {
       const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
       const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 
@@ -291,19 +307,46 @@ const drawStalls = (ctx) => {
   };
 
   /* ============================
+   * Save handler
+   * ============================ */
+  const handleSaveClick = () => {
+    if (stalls.length === 0) {
+      alert("No stalls to save!");
+      return;
+    }
+
+    // Show custom fee popup instead of prompt
+    setShowFeePopup(true);
+  };
+
+  const handleFeeSubmit = () => {
+    if (!edit && (!feeInput || feeInput.trim() === "")) {
+      alert("Fee is required for new stalls!");
+      return;
+    }
+
+    const fee = parseFloat(feeInput) || 0;
+    
+    // Update stalls with fee
+    const updatedStalls = stalls.map(stall => ({
+      ...stall,
+      fee: fee
+    }));
+
+    // Call parent's save function
+    if (onSave) {
+      onSave(updatedStalls, fee);
+    }
+
+    setShowFeePopup(false);
+    setFeeInput("");
+  };
+
+  /* ============================
    * Render
    * ============================ */
-
   return (
     <div className="w-full h-full relative bg-gray-100 flex">
-      {/* LEFT TOOLBAR 
-      <div className="w-14 bg-white border-r flex flex-col items-center py-2 gap-2">
-        <button onClick={() => setMode("add")} className={`w-10 h-10 rounded ${mode === "add" ? "bg-green-200" : "bg-gray-100"}`}>➕</button>
-        <button onClick={() => setMode("delete")} className={`w-10 h-10 rounded ${mode === "delete" ? "bg-red-200" : "bg-gray-100"}`}>🗑</button>
-        <button onClick={() => setMode("start")} className={`w-10 h-10 rounded ${mode === "start" ? "bg-orange-200" : "bg-gray-100"}`}>🚩</button>
-      </div>
-
-      {/* CANVAS */}
       <div className="flex-1 relative">
         <canvas
           ref={canvasRef}
@@ -319,90 +362,122 @@ const drawStalls = (ctx) => {
 
         {/* FLOATING BOTTOM TOOLBAR */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white shadow-lg rounded-full px-4 py-2 flex items-center gap-4 z-50">
-            {/* ADD */}
-            <button
-                onClick={() => setMode("add")}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-xl
-                ${mode === "add" ? "bg-green-400 text-white" : "bg-gray-100"}`}
-            >
-                <TbPlus />
-            </button>
+          {/* ADD STALL */}
+          <button
+            onClick={() => setMode("add")}
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-xl
+              ${mode === "add" ? "bg-green-400 text-white" : "bg-gray-100"}`}
+            title="Add Stalls"
+          >
+            <TbPlus />
+          </button>
 
-            {/* START POINT */}
-            <button
-                onClick={() => setMode("start")}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-xl
-                ${mode === "start" ? "bg-orange-400 text-white" : "bg-gray-100"}`}
-            >
-                <TbFlag />
-            </button>
+          {/* FREE MOVE */}
+          <button
+            onClick={() => setMode("free")}
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-xl
+              ${mode === "free" ? "bg-blue-400 text-white" : "bg-gray-100"}`}
+            title="Free Move (Pan/Zoom)"
+          >
+            <TbHandMove />
+          </button>
 
-            {/* DELETE */}
-            <button
-                onClick={() => setMode("delete")}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-xl
-                ${mode === "delete" ? "bg-red-400 text-white" : "bg-gray-100"}`}
-            >
-                <TbTrash />
-            </button>
-            {/* SAVE */}
-            <button
-              onClick={async () => {
-                if (stalls.length === 0) {
-                  alert("No stalls to save!");
-                  return;
-                }
+          {/* DELETE */}
+          <button
+            onClick={() => setMode("delete")}
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-xl
+              ${mode === "delete" ? "bg-red-400 text-white" : "bg-gray-100"}`}
+            title="Delete Stalls"
+          >
+            <TbTrash />
+          </button>
 
-                // Ask user for fee per lot
-                const fee = prompt("Enter fee for one lot:", "0");
-                if (!fee) return;
-
-                const totalDigits = String(stalls.length).length;
-
-                const payload = stalls.map((s, i) => ({
-                  lot: String(i + 1).padStart(totalDigits, "0"),
-                  fee: fee,
-                  market_id: market_id,
-                  x_floor_plan: s.x,
-                  y_floor_plan: s.y,
-                }));
-
-                try {
-                  const res = await fetch(`${base_url}/market/${market_id}/space`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                  });
-
-                  if (!res.ok) {
-                    const errText = await res.text();
-                    console.error("Failed to save stalls:", errText);
-                    alert("Failed to save stalls. Check console for details.");
-                  } else {
-                    console.log("All stalls saved successfully!");
-                    alert("All stalls saved successfully!");
-                    navigate(`/business/market/${market_id}/space`);
-                  }
-                } catch (err) {
-                  console.error("Error saving stalls:", err);
-                  alert("Error saving stalls. Check console for details.");
-                }
-              }}
-              className="w-12 h-12 rounded-full flex items-center justify-center text-xl bg-blue-500 text-white"
-            >
-              <TbDeviceFloppy />
-            </button>
-
+          {/* SAVE */}
+          <button
+            onClick={handleSaveClick}
+            className="w-12 h-12 rounded-full flex items-center justify-center text-xl bg-orange-500 text-white hover:bg-orange-600"
+            title="Save Floor Plan"
+          >
+            <TbDeviceFloppy />
+          </button>
         </div>
 
-
+        {/* STATUS INFO */}
         <div className="absolute top-3 left-3 bg-white shadow rounded px-3 py-2 text-sm">
-          <div>🟩 Stalls: {stalls.length}</div>
-          <div>🚩 Start: {startPoint ? "Set" : "None"}</div>
-          
+          <div>
+            {edit && existingStalls.length > 0 ? (
+              <>
+                <span className="text-blue-600">🟦 Existing: {existingStalls.length}</span>
+                <br />
+                <span className="text-green-600">🟩 New: {stalls.length - existingStalls.length}</span>
+              </>
+            ) : (
+              <span className="text-green-600">🟩 Stalls: {stalls.length}</span>
+            )}
+          </div>
+          <div>
+            Mode:{" "}
+            <span className={`font-medium ${
+              mode === "add" ? "text-green-600" :
+              mode === "delete" ? "text-red-600" :
+              "text-blue-600"
+            }`}>
+              {mode === "add" ? "Add" : mode === "delete" ? "Delete" : "Free Move"}
+            </span>
+          </div>
         </div>
 
-        </div>
+        {/* CUSTOM FEE POPUP MODAL */}
+        {showFeePopup && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Set Stall Fee
+              </h3>
+              
+              <p className="text-sm text-gray-600 mb-4">
+                {edit 
+                  ? "Enter the fee for each stall (RM). Leave empty to keep existing fees."
+                  : "Enter the fee for each stall (RM)."
+                }
+              </p>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Fee per Stall (RM)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={feeInput}
+                  onChange={(e) => setFeeInput(e.target.value)}
+                  placeholder={edit ? "e.g., 50.00 (leave empty to keep existing)" : "e.g., 50.00"}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowFeePopup(false);
+                    setFeeInput("");
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleFeeSubmit}
+                  className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 font-medium"
+                >
+                  {edit ? "Update & Save" : "Save Floor Plan"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+    </div>
   );
 }

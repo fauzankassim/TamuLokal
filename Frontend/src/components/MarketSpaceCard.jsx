@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const MarketSpaceCard = ({ marketspace }) => {
-  console.log(marketspace);
+
   const navigate = useNavigate();
 
   const status =

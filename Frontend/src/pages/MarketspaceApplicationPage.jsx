@@ -194,14 +194,6 @@ const MarketspaceApplicationPage = () => {
                                                     Manage Product
                                                 </button>
                                             )}
-                                            {app.application_status !== 2 && app.application_status !== 1 && (
-                                                <button
-                                                    className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 font-medium"
-                                                >
-                                                    <TbRefresh className="text-sm" />
-                                                    Appeal
-                                                </button>
-                                            )}
                                         </div>
                                     </div>
                                 </div>

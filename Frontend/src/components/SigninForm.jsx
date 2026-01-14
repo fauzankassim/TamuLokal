@@ -30,12 +30,9 @@ const SigninForm = () => {
 
       if (error) throw error;
 
-      console.log("✅ Signed in successfully:", data);
-
-      // Session is automatically stored in localStorage by Supabase
-      console.log("Access token:", data.session?.access_token);
 
       // ✅ Redirect to homepage
+      localStorage.setItem("isHello", "true");
       navigate("/", { replace: true });
     } catch (err) {
       console.error(err);
@@ -129,7 +126,7 @@ const SigninForm = () => {
               provider: "google",
             });
             if (error) console.error(error);
-            console.log(data);
+
           }}
         >
           <FaGoogle className="text-[#DB4437]" />

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { TbHeart, TbHeartFilled, TbMessageCircle, TbShare2 } from "react-icons/tb";
 import CommunityContentCommentPopup from "./CommunityContentCommentPopup";
+import useRole from "../hooks/useRole";
 
 // Helper function to format created_at
 const formatDate = (dateString) => {
@@ -27,6 +28,7 @@ const formatDate = (dateString) => {
 };
 
 const CommunityContentCard = ({ content, type }) => {
+  const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const session = useAuth();
   const userId = session?.user?.id;
@@ -61,8 +63,10 @@ const CommunityContentCard = ({ content, type }) => {
 
   // Follow/unfollow
   const handleFollowToggle = async () => {
-    if (!userId) return;
-
+    if (!userId) {
+      navigate("/auth");
+      return;
+    }
     try {
       if (isFollowing) {
         await fetch(
@@ -88,8 +92,10 @@ const CommunityContentCard = ({ content, type }) => {
 
   // Like/unlike
   const handleLikeToggle = async () => {
-    if (!userId) return;
-
+    if (!userId) {
+      navigate("/auth");
+      return;
+    }
     try {
       if (isLiked) {
         await fetch(
@@ -128,7 +134,6 @@ const CommunityContentCard = ({ content, type }) => {
         await navigator.share({ title, text, url: shareUrl });
       } else {
         await navigator.clipboard.writeText(shareUrl);
-        alert("Link copied to clipboard");
       }
     } catch (err) {
       console.error("Error sharing content:", err);

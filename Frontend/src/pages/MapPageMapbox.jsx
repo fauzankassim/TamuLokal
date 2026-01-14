@@ -6,6 +6,7 @@ import useMarket from "../hooks/useMarket";
 import Spinner from "../components/Spinner";
 import { getDistanceMeters } from "../utils/calculateMarketDistance";
 
+
 const MapPageMapbox = () => {
   const location = useCurrentLocation();
   const { markets: fetchedMarkets, loading } = useMarket(null, location);
@@ -19,7 +20,7 @@ const MapPageMapbox = () => {
   const [routeCompleted, setRouteCompleted] = useState(false);
   const mapRef = useRef(null);
 
-  const [distance, setDistance] = useState(10000);
+  const [distance, setDistance] = useState(20000);
 
   useEffect(() => {
     setMarkets(fetchedMarkets || []);

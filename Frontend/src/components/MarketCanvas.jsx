@@ -330,7 +330,6 @@ export default function MarketCanvas({ marketId, stalls, isVendor=false, session
    * ============================ */
   if (!stalls || !stalls.length) return <div>No stalls found</div>;
 
-  console.log(selectedStall);
   return (
     <div className="relative w-full h-full flex">
       <canvas

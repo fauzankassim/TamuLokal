@@ -580,7 +580,7 @@ const toggleWeeklyDay = (dayId) => {
       }
 
       const result = await response.json();
-      console.log("Schedules saved:", result);
+
       
     } catch (err) {
       console.error("Error saving schedules:", err);

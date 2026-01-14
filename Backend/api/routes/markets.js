@@ -14,10 +14,12 @@ router.delete('/:id', controllers.DeleteMarket)
 router.get('/:id/verify', controllers.GetVerification)
 router.put('/:id/verify', controllers.PutVerification)
 router.put('/:id/image', controllers.PutMarketImage)
-router.post('/:id/space', controllers.PostMarketspace)
 
+router.post('/:id/space', controllers.PostMarketspace)
 router.delete('/:id/space', controllers.DeleteMarketspace)
 router.get('/:id/space', controllers.GetMarketspace)
+router.put('/:id/space', controllers.PutMarketspace)
+
 router.post('/:id/visit', controllers.PostMarketVisitor)
 
 router.get('/:id/statistic', controllers.GetMarketStatistic)

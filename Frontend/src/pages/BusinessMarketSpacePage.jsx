@@ -50,7 +50,7 @@ const BusinessMarketSpacePage = () => {
               : "Business Page"} />
       <main className="overflow-hidden flex flex-col items-center md:items-start font-inter p-4 max-w-7xl md:mx-auto">
         {role === "Vendor" && <VendorMarketSpaceList vendorId={session.user.id} />}
-        {role === "Organizer" && <OrganizerMarketList organizerId={session.user.id} />}
+        {role === "Organizer" && <OrganizerMarketList organizerId={session.user.id} isOwnProfile={true}/>}
       </main>
       
     </div>

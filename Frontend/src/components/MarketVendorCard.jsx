@@ -39,7 +39,7 @@ const MarketVendorCard = ({ vendor }) => {
       
       {/* Lot and Rating Row */}
       <div className="mt-1 flex justify-between items-center text-sm text-gray-700">
-        <span className="font-medium">Lot {lot} &middot;</span>
+        <span className="font-medium">Lot {lot}</span>
 
         <span className="flex items-center">
           {hasRating ? (
