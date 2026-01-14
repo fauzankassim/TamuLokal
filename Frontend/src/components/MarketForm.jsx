@@ -231,7 +231,12 @@ useEffect(() => {
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map);
 
-  markerRef.current = L.marker([location.lat, location.lng]).addTo(map);
+      L.circle([location.lat, location.lng], {
+        radius: 100,
+        color: "#FF8225",
+        fillColor: "#FF8225",
+        fillOpacity: 1,
+      }).addTo(map);
 
   map.on("click", (e) => {
     const { lat, lng } = e.latlng;
