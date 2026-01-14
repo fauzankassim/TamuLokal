@@ -76,21 +76,63 @@ const MarketspaceApplicantCard = ({ application }) => {
         </div>
       </div>
 
-      {/* Right: Actions */}
       <div className="flex items-center gap-2">
-        <button
-          className="p-2 rounded bg-red-100 text-red-700 hover:bg-red-200 transition"
-          title="Reject"
-        >
-          <TbX className="text-lg" />
-        </button>
-        <button
-          className="p-2 rounded bg-green-100 text-green-700 hover:bg-green-200 transition"
-          title="Accept"
-        >
-          <TbCheck className="text-lg" />
-        </button>
-      </div>
+  <button
+  className="p-2 rounded bg-red-100 text-red-700 hover:bg-red-200 transition"
+  title="Reject"
+  onClick={async () => {
+    try {
+      const res = await fetch(
+        `${base_url}/marketspace/${application.space_id}/action?application_id=${application.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: 3 }), // reject
+        }
+      );
+      if (!res.ok) throw new Error("Failed to reject application");
+
+      alert("Application rejected successfully!");
+      // ✅ Tell parent to update state
+      if (typeof onStatusChange === "function") onStatusChange(3);
+    } catch (err) {
+      console.error(err);
+      alert("Error rejecting application: " + err.message);
+    }
+  }}
+>
+  <TbX className="text-lg" />
+</button>
+
+<button
+  className="p-2 rounded bg-green-100 text-green-700 hover:bg-green-200 transition"
+  title="Accept"
+  onClick={async () => {
+    try {
+      const res = await fetch(
+        `${base_url}/marketspace/${application.space_id}/action?application_id=${application.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: 1 }), // accept
+        }
+      );
+      if (!res.ok) throw new Error("Failed to accept application");
+
+      alert("Application accepted successfully!");
+      // ✅ Tell parent to update state
+      if (typeof onStatusChange === "function") onStatusChange(1);
+    } catch (err) {
+      console.error(err);
+      alert("Error accepting application: " + err.message);
+    }
+  }}
+>
+  <TbCheck className="text-lg" />
+</button>
+
+</div>
+
     </div>
   );
 };

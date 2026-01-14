@@ -9,18 +9,41 @@ const BusinessFinishSignupForm = ({ onChange, user_id }) => {
     password: "",
   });
 
-  const handleFileChange = (e) => {
-    const { files } = e.target;
-    const updatedData = { ...formData, profilePicture: files[0] };
-    setFormData(updatedData);
-    if (onChange) onChange(updatedData);
+const handleFileChange = (e) => {
+  const { files } = e.target;
+  if (!files || !files[0]) return;
+
+  const previewUrl = URL.createObjectURL(files[0]);
+
+  const updatedData = {
+    ...formData,
+    profilePicture: files[0],   // File (for upload)
+    previewUrl: previewUrl,     // URL (for preview)
   };
 
-  const handleRemoveFile = () => {
-    const updatedData = { ...formData, profilePicture: null };
-    setFormData(updatedData);
-    if (onChange) onChange(updatedData);
+  setFormData(updatedData);
+  if (onChange) onChange(updatedData);
+};
+
+
+
+  
+
+const handleRemoveFile = () => {
+  if (formData.previewUrl?.startsWith("blob:")) {
+    URL.revokeObjectURL(formData.previewUrl);
+  }
+
+  const updatedData = {
+    ...formData,
+    profilePicture: null,
+    previewUrl: null,
   };
+
+  setFormData(updatedData);
+  if (onChange) onChange(updatedData);
+};
+
 
   const handleInputChange = (e) => {
     const { value } = e.target;
@@ -67,7 +90,7 @@ const BusinessFinishSignupForm = ({ onChange, user_id }) => {
           <div className="w-24 h-24 rounded-full bg-gray-100 mb-6 flex items-center justify-center overflow-hidden">
             {formData.profilePicture ? (
               <img
-                src={data.image}
+                src={formData.previewUrl || data.image}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />

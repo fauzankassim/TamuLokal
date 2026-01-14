@@ -20,7 +20,7 @@ const STATIC_QUANTITY_TYPES = [
   { id: 4, title: "unit" },
   { id: 5, title: "bag" },
 ];
-const ProductForm = ({ product = null, category = null, vendorId, onClose }) => {
+const ProductForm = ({ product = null, category = null, vendorId, onClose, setLoading }) => {
   const isEdit = !!product;
 
   const [imageFile, setImageFile] = useState(null);
@@ -92,6 +92,7 @@ const ProductForm = ({ product = null, category = null, vendorId, onClose }) => 
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     try {
+      setLoading(true);
       const res = await fetch(`${base_url}/product/${product.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -116,11 +117,13 @@ const ProductForm = ({ product = null, category = null, vendorId, onClose }) => 
           console.warn("Error deleting image from storage:", storageErr);
         }
       }
-      alert("Product deleted!");
+
       onClose();
     } catch (err) {
+      setLoading(false);
       console.error(err);
-      alert("Failed to delete product");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -137,7 +140,7 @@ const ProductForm = ({ product = null, category = null, vendorId, onClose }) => 
 
     try {
       let productId;
-
+      setLoading(true);
       if (isEdit) {
         const updateRes = await fetch(`${base_url}/product/${product.id}`, {
           method: "PUT",
@@ -196,11 +199,13 @@ const ProductForm = ({ product = null, category = null, vendorId, onClose }) => 
         if (!imgRes.ok) throw new Error("Failed to update product image");
       }
 
-      alert(isEdit ? "Product updated!" : "Product added!");
+
       onClose();
     } catch (err) {
       console.error(err);
-      alert(isEdit ? "Failed to update product" : "Failed to add product");
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 

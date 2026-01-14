@@ -335,10 +335,27 @@ const MarketSpacePage = () => {
       {selectedStall?.pending_applications?.length > 0 ? (
         <div className="space-y-3 max-h-80 overflow-y-auto">
           {selectedStall.pending_applications.map((app) => (
-           <MarketspaceApplicantCard
-              key={app.id}
-              application={app}
-            />
+<MarketspaceApplicantCard
+  key={app.id}
+  application={app}
+  onStatusChange={(newStatus) => {
+    // Update the selectedStall's pending_applications in MarketSpacePage
+    setStalls((prev) =>
+      prev.map((stall) => {
+        if (stall.id === app.space_id) {
+          return {
+            ...stall,
+            pending_applications: stall.pending_applications.map((a) =>
+              a.id === app.id ? { ...a, status: newStatus } : a
+            ),
+          };
+        }
+        return stall;
+      })
+    );
+  }}
+/>
+
           ))}
         </div>
       ) : (

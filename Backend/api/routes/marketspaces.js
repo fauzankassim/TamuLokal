@@ -3,6 +3,7 @@ const router = require('express').Router()
 
 router.get('/available', controllers.GetAvailableMarketspace)
 router.post('/:id/apply', controllers.PostMarketspaceApplication)
+router.put('/:id/action', controllers.PutMarketspaceApplication)
 
 router.get('/:id', controllers.GetMarketspaceById)
 router.get('/:id/product', controllers.GetMarketspaceProduct)

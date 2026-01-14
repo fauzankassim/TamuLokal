@@ -29,7 +29,6 @@ const AuthPage = () => {
   }, [from, navigate, session]);
 
   const handleClose = () => {
-    console.log("Closing auth, going back to:", from);
     navigate(from, { replace: true });
   };
 

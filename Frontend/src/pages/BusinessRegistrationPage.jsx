@@ -10,7 +10,7 @@ const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
 const BusinessRegistrationPage = () => {
   const { role } = useParams();
-  const session = useAuth(false);
+  const session = useAuth(true);
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [identificationData, setIdentificationData] = useState({});
@@ -45,7 +45,7 @@ const handleSubmit = async () => {
     setLoading(true);
 
     const postData = {
-      id: session.user.id,
+      id: session?.user?.id,
       name: identificationData.businessName,
       license: identificationData.businessLicense,
     };
@@ -110,7 +110,7 @@ const handleSubmit = async () => {
     if (finishData.profilePicture) {
       const user_id = result.id || result[roleType]?.id || session.user.id;
       const file = allFormData.profilePicture;
-      const filePath = `visitors/${user_id}/${user_id}}.jpg`;
+      const filePath = `visitors/${user_id}/${user_id}.jpg`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("tamulokal")

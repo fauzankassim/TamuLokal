@@ -54,6 +54,19 @@ const getMarketspaceProduct = async (space_id, product_id) => {
   return data;
 }
 
+const putMarketspaceApplication = async(application_id, status) => {
+  const { data, error } = await supabase
+    .from("space_applications")
+    .update({status})
+    .eq("id", application_id);
+
+    console.log(error);
+
+  return data;
+
+}
+
+
 const postMarketspaceProduct = async (space_id, product_id) => {
     const { data, error } = await supabase
         .from("space_product")
@@ -111,6 +124,7 @@ const getMarketspaceByOrganizerId = async (organizer_id) => {
 }
 
 module.exports = {
+  putMarketspaceApplication,
   postMarketspaceApplication,
   getMarketspaceById,
   getAvailableMarketspace,

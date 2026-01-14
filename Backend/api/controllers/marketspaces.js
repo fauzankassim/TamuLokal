@@ -1,4 +1,15 @@
-const { postMarketspaceApplication, getMarketspaceById, getAvailableMarketspace, deleteMarketspaceProduct, getMarketspaceProduct, postMarketspaceProduct, putMarketspaceState, getMarketspaceByMarketId, getMarketspaceByOrganizerId, getMarketspaceByVendorId }= require('../services/marketspaces')
+const { putMarketspaceApplication, postMarketspaceApplication, getMarketspaceById, getAvailableMarketspace, deleteMarketspaceProduct, getMarketspaceProduct, postMarketspaceProduct, putMarketspaceState, getMarketspaceByMarketId, getMarketspaceByOrganizerId, getMarketspaceByVendorId }= require('../services/marketspaces')
+
+const PutMarketspaceApplication = async (req, res) => {
+    try {
+        const { application_id } = req.query;
+        const { status } = req.body;
+        const application = await putMarketspaceApplication(application_id, status)
+        res.status(200).json(application)
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
 
 const PostMarketspaceApplication = async (req, res) => {
     try {
@@ -125,6 +136,7 @@ const GetMarketspaceByOrganizerId = async (req, res) => {
 
 
 module.exports = {
+    PutMarketspaceApplication,
     PostMarketspaceApplication,
     GetMarketspaceById,
     GetAvailableMarketspace,

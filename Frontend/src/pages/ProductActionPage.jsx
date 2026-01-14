@@ -5,6 +5,8 @@ import ProductForm from "../components/ProductForm";
 import { TbChevronLeft } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import Spinner from "../components/Spinner";
+
 
 const ProductActionPage = () => {
   const navigate = useNavigate();
@@ -13,6 +15,7 @@ const ProductActionPage = () => {
   const [productData, setProductData] = useState(null);
   const [categoryData, setCategoryData] = useState(null);
   const base_url = import.meta.env.VITE_BACKEND_API_URL;
+  const [loading, setLoading] = useState(false);
 
   // Fetch product if editing
   useEffect(() => {
@@ -36,6 +39,7 @@ const ProductActionPage = () => {
 
   if (!session) return null; // wait for session
 
+  if (loading) return <Spinner loading={true} />
   return (
     
     <div className="w-screen h-screen">
@@ -48,6 +52,7 @@ const ProductActionPage = () => {
           product={id ? productData : null} // pass product data if editing
           category={id ? categoryData : null}
           onClose={() => window.history.back()}
+          setLoading={setLoading}
         />
       </main>
 

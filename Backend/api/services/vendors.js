@@ -114,72 +114,18 @@ const putVendorImageById = async (id, image) => {
 
 const postVendor = async (vendor) => {
   // 1️⃣ Insert vendor row
-  const { data: vendorData, error: vendorError } = await supabase
+  console.log(vendor);
+  const { data, error} = await supabase
     .from("vendor")
     .insert({
-      id: vendor.user_id,
-      name: vendor.businessName,
-      license: vendor.businessLicense,
+      id: vendor.id,
+      name: vendor.name,
+      license: vendor.license,
     })
     .select();
 
-  if (vendorError) {
-    console.error("Vendor insert error:", vendorError);
-    return { error: vendorError };
-  }
-
-  // 2️⃣ Update visitor info
-  const { data: visitorData, error: visitorError } = await supabase
-    .from("visitor")
-    .update({
-      username: vendor.username,
-      fullname: vendor.fullName,
-      nric: vendor.nric,
-    })
-    .eq("id", vendor.user_id)
-    .select();
-
-  if (visitorError) {
-    console.error("Visitor update error:", visitorError);
-  }
-
-  // 3️⃣ Create vendor folder in storage
-  const folderPath = `vendors/${vendor.user_id}/`;
-
-  // Supabase doesn’t allow empty folders — we upload a dummy file to "create" it
-  const { error: uploadError } = await supabase.storage
-    .from('tamulokal')
-    .upload(`${folderPath}init.txt`, 'folder initialized', {
-      upsert: false,
-    });
-
-  if (uploadError && uploadError.message !== 'The resource already exists') {
-    throw uploadError;
-  }
-
-  // 4️⃣ Generate the public URL
-  const { data: publicUrlData } = supabase.storage
-    .from("tamulokal")
-    .getPublicUrl(`${folderPath}init.txt`);
-
-  const folderUrl = publicUrlData.publicUrl;
-
-  // 5️⃣ Update vendor row with image path (folder link)
-  const { data: updatedVendor, error: updateError } = await supabase
-    .from("vendor")
-    .update({ image: folderUrl })
-    .eq("id", vendor.user_id)
-    .select();
-
-  if (updateError) {
-    console.error("Failed to update vendor image path:", updateError);
-  }
-
-  return {
-    vendorData: updatedVendor || vendorData,
-    visitorData,
-    folderUrl,
-  };
+    console.log(error);
+  return data;
 };
 
 

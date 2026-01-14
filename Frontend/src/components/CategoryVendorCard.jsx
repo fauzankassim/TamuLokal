@@ -44,7 +44,7 @@ const CategoryVendorCard = ({ vendor }) => {
             </h3>
             <div className="flex items-center text-xs gap-1">
               <TbStarFilled className="text-yellow-400 text-xs" />
-              {vendor.avg_rating?.toFixed(1) ?? "0.0"} ({vendor.total_reviews})
+              {vendor.avg_rating?.toFixed(1) ?? "0.0"}
             </div>
           </div>
         </div>

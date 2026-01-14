@@ -39,7 +39,9 @@ const MapMarketCard = ({ market, userLocation, onGetDirection }) => { // 👈 Ad
           <span className={isOpen ? "text-[var(--green)]" : "text-[var(--red)]"}>
             {isOpen ? "Open" : "Closed"}
           </span>
-          <span>| {loading ? "Loading..." : `${distance} km`}</span>
+          {distance != null && (
+            <span>| {loading ? "Loading..." : `${distance} km`}</span>
+          )}
         </div>
       </div>
 

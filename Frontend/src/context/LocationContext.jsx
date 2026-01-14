@@ -15,7 +15,7 @@ export function LocationProvider({ children }) {
         };
         setLocation(loc);
         setLoading(false);
-        console.log("[Global LocationContext] location set:", loc);
+
       },
       (err) => {
         console.error("[Global LocationContext] location error:", err);

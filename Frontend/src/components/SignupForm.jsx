@@ -82,8 +82,7 @@ const SignupForm = () => {
 
       const visitor = data.user;
       if (!visitor) throw new Error("Signup failed: user not created.");
-
-      alert("Signup successful! Please check your email for verification.");
+      localStorage.setItem("isHello", "true");
       navigate("/");
 
     } catch (err) {
