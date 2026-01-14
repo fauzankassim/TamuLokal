@@ -31,7 +31,7 @@ const MarketPage = () => {
         const data = await res.json();
         setMarket(data);
       } catch (error) {
-        console.log("Error fetching market", error);
+
       }
     };
 
@@ -113,7 +113,7 @@ const MarketPage = () => {
   const now = new Date();
   const currentDay = now.getDay() === 0 ? 7 : now.getDay();
   const todaysSchedule = market.schedules?.find((s) => s.daily_day === currentDay);
-
+  console.log(market);
   const tabs = [
     { id: "detail", label: "Detail" },
     { id: "vendors", label: "Vendors" },

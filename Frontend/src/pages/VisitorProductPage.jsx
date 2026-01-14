@@ -18,12 +18,12 @@ const categoriesMap = [
 
 const VisitorProductPage = ({ isOwnProfile = false }) => {
     const location = useLocation();
-    console.log(isOwnProfile);
+
     const navigate = useNavigate();
     const { product_id } = useParams();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    console.log(data);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {

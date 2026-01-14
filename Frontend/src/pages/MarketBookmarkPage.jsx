@@ -31,21 +31,6 @@ const MarketBookmarkPage = () => {
     fetchBookmarks()
   }, [visitorId])
 
-  const handleRemoveBookmark = (marketId) => {
-    // TODO: implement remove API call
-    console.log("Remove bookmark:", marketId)
-  }
-
-  const handleGetDirection = (market) => {
-    // TODO: open maps or location
-    console.log("Get direction for:", market.market_name)
-  }
-
-  const handleCheckMarket = (marketId) => {
-    // TODO: navigate to market detail page
-    navigate(`/market/${marketId}`)
-  }
-
   return (
     <div className="w-screen h-full flex flex-col relative">
       {/* ===== Header (UNCHANGED) ===== */}

@@ -17,7 +17,6 @@ const BusinessMarketspaceAvailablePage = ({ isVendor = true }) => {
 
                 const data = await res.json()
                 setMarketspaces(data)
-                console.log("Available marketspace:", data)
             } catch (err) {
                 console.error("Error fetching available marketspace:", err)
             }

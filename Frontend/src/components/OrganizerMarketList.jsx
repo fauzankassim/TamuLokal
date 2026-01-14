@@ -6,7 +6,7 @@ import Spinner from "./Spinner";
 const base_url = import.meta.env.VITE_BACKEND_API_URL;
 
 
-const OrganizerMarketList = ({ organizerId, isOwnProfile = false }) => {
+const OrganizerMarketList = ({ organizerId, isOwnProfile = false, isVisitor = false }) => {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -35,24 +35,17 @@ const OrganizerMarketList = ({ organizerId, isOwnProfile = false }) => {
   return (
     <div className="flex flex-col gap-3 pb-12">
       {markets
-  .filter(
-    (market) =>
-      isOwnProfile || market.application_status !== null
-  )
-  .map((market) => (
-    <NavLink
-      key={market.id}
-      to={`/market/${market.id}`}
-      className="block"
-    >
-      <OrganizerMarketCard
-        market={market}
-        isOwnProfile={isOwnProfile}
-      />
-    </NavLink>
-))}
-
+        .filter((market) => isOwnProfile || market.application_status !== null)
+        .map((market) => (
+          <OrganizerMarketCard
+            key={market.id}
+            isVisitor={isVisitor}
+            market={market}
+            isOwnProfile={isOwnProfile}
+          />
+      ))}
     </div>
+
   );
 };
 

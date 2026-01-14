@@ -14,6 +14,27 @@ const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const getNotificationLink = (notif) => {
+  switch (notif.event_id) {
+    case 1:
+      return "/market/history/";
+    case 2:
+      return `/visitor/${notif.sender_id}/`;
+    case 3:
+      return `/market/${notif.market_id}/`;
+    case 4:
+      return `/business/market/${notif.market_id}/space`;
+    case 5:
+      return `/business/marketspace/`;
+    case 6:
+      return `/business/marketspace/application`;
+    case 7:
+      return `/business/market/${notif.market_id}/space`;
+    default:
+      return "#"; // fallback
+  }
+};
+
   useEffect(() => {
     if (!user?.id) return;
 
@@ -93,9 +114,13 @@ const NotificationPage = () => {
             {groupedNotifications.today.length > 0 && (
               <div>
                 <h2 className="text-[var(--black)] font-semibold mb-2">Today</h2>
-                {groupedNotifications.today.map((notif) => (
-                  <NotificationCard key={notif.id} notif={notif} />
-                ))}
+                  {groupedNotifications.today.map((notif) => (
+                    <NotificationCard
+                      key={notif.id}
+                      notif={notif}
+                      onClick={() => navigate(getNotificationLink(notif))}
+                    />
+                  ))}
               </div>
             )}
 
@@ -103,21 +128,24 @@ const NotificationPage = () => {
             {groupedNotifications.yesterday.length > 0 && (
               <div>
                 <h2 className="text-[var(--black)] font-semibold mb-2">Yesterday</h2>
-                {groupedNotifications.yesterday.map((notif) => (
-                  <NotificationCard key={notif.id} notif={notif} />
-                ))}
+                  {groupedNotifications.yesterday.map((notif) => (
+                    <NotificationCard
+                      key={notif.id}
+                      notif={notif}
+                      onClick={() => navigate(getNotificationLink(notif))}
+                    />
+                  ))}
               </div>
             )}
 
             {/* ─── Older ─────────── */}
-            {groupedNotifications.older.length > 0 && (
-              <div>
-                <h2 className="text-[var(--black)] font-semibold mb-2">Older</h2>
-                {groupedNotifications.older.map((notif) => (
-                  <NotificationCard key={notif.id} notif={notif} />
-                ))}
-              </div>
-            )}
+            {groupedNotifications.older.map((notif) => (
+              <NotificationCard
+                key={notif.id}
+                notif={notif}
+                onClick={() => navigate(getNotificationLink(notif))}
+              />
+            ))}
           </>
         )}
 

@@ -36,8 +36,6 @@ const MarketSpaceActionPage = () => {
         const vendorData = await vendorRes.json();
         const spaceData = await spaceRes.json();
 
-        console.log(vendorData);
-
         setVendor(vendorData);
         setSpace(spaceData);
       } catch (err) {

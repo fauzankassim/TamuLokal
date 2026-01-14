@@ -37,6 +37,8 @@ const deleteMarketspaceProduct = async (space_id, product_id) => {
     .eq("space_id", space_id)
     .eq("product_id", product_id);
 
+    console.log(error);
+
   return data;
 }
 
@@ -62,6 +64,7 @@ const postMarketspaceProduct = async (space_id, product_id) => {
         .select()
         .single();
 
+      console.log(error);
     return data;
 }
 

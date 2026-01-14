@@ -90,7 +90,7 @@ const VisitProfilePage = () => {
     };
 
     registerProfileClick();
-    console.log("here");
+
   }, [id, isOwnProfile, session, base_url]);
 
   const roleTabIcon = {
@@ -159,7 +159,7 @@ const VisitProfilePage = () => {
               <div
                 key={post.id}
                 className="w-full aspect-square overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer rounded-lg bg-white"
-                onClick={() => console.log("Clicked post:", post.id)}
+                onClick={() => navigate("/community")}
               >
                 <img
                   src={post.image}
@@ -185,7 +185,7 @@ const VisitProfilePage = () => {
 
         {role === "organizer" && activeTab === "markets" && (
           <div className="mt-6">
-            <OrganizerMarketList organizerId={visitor_id} />
+            <OrganizerMarketList organizerId={visitor_id} isVisitor={true}/>
           </div>
         )}
       </div>

@@ -85,7 +85,6 @@ const MarketSpacePage = () => {
   if (loading) return <Spinner loading={loading} />;
   if (error) return <div>Error: {error}</div>;
 
-  console.log(stalls);
 
   const displayedStalls = stalls
     // Filter by search term
@@ -110,22 +109,20 @@ const MarketSpacePage = () => {
     });
 
     
-
-  console.log(selectedStall);
   return (
     <div className="w-screen h-screen flex flex-col relative">
       <Header title={"Market Space"} />
-{/* 🔹 Floating Top-Right Edit Button (Canvas Mode Only) */}
-{showPlan && (
-  <div className="fixed top-4 right-4 z-20">
-    <button
-      onClick={() => navigate(`/business/market/${id}/edit-plan`)}
-      className="border text-black px-2 py-2 rounded-full shadow hover:bg-blue-600 transition"
-    >
-      <TbPencil />
-    </button>
-  </div>
-)}
+      {/* 🔹 Floating Top-Right Edit Button (Canvas Mode Only) */}
+      {showPlan && (
+        <div className="fixed top-4 right-4 z-20">
+          <button
+            onClick={() => navigate(`/business/market/${id}/edit-plan`)}
+            className="border text-black px-2 py-2 rounded-full shadow hover:bg-blue-600 transition"
+          >
+            <TbPencil />
+          </button>
+        </div>
+      )}
 
       <main className={`flex-1 flex ${showPlan ? 'overflow-hidden' : 'overflow-auto'}`}>
         {showPlan ? (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   TbLayoutGrid,
   TbClock,
@@ -10,11 +10,13 @@ import {
   TbSpeakerphone
 } from "react-icons/tb";
 
-const OrganizerMarketCard = ({ market, isVendor = false, onView, isOwnProfile = true }) => {
+const OrganizerMarketCard = ({ market, isVisitor = false, isVendor = false, onView, isOwnProfile = true }) => {
   const [showSchedule, setShowSchedule] = useState(false);
-
+  const navigate = useNavigate();
   return (
-    <div className="relative rounded-xl overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer h-[208px]">
+    <div className="relative rounded-xl overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer h-[208px]"
+    onClick={() => isVisitor && navigate(`/market/${market.id}`)}
+    >
       <img
         src={market.image || market.market_image || "/default-market.png"}
         alt={market.name || market.market_name}

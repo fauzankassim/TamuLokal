@@ -17,11 +17,9 @@ const AuthPage = () => {
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    console.log("AuthPage opened from:", from);
 
     // Redirect to homepage if session exists
     if (session) {
-      console.log("Existing session found, redirecting...");
       navigate("/", { replace: true });
     }
 

@@ -33,7 +33,7 @@ const ProductActionPage = () => {
 
     fetchProduct();
   }, [id]);
-  console.log(productData);
+
   if (!session) return null; // wait for session
 
   return (

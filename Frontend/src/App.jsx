@@ -40,7 +40,6 @@ import VendorStatisticReport from './pages/VendorStatisticReport';
 import VisitorProductPage from './pages/VisitorProductPage';
 import VisitorProductReviewActionPage from './pages/VisitorProductReviewActionPage';
 import VisitorProductReviewPage from './pages/VisitorProductReviewPage';
-import VendorProductReviewPage from './pages/VendorProductReviewPage';
 import VisitProfilePage from './pages/VisitProfilePage';
 
 const router = createBrowserRouter(

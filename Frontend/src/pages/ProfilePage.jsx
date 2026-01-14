@@ -107,7 +107,7 @@ const ProfilePage = () => {
                 key={post.id}
                 className="w-full aspect-square overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer rounded-lg bg-white"
                 onClick={() => {
-                  console.log("Clicked post:", post.id);
+                  navigate("/community");
                 }}
               >
                 <img

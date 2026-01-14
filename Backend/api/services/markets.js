@@ -135,6 +135,8 @@ const deleteMarketSchedule = async (market_id) => {
     .delete()
     .eq("market_id", market_id);
 
+    console.log(error);
+
   return data;
 }
 const getMarketSchedule = async (market_id) => {
@@ -147,11 +149,13 @@ const getMarketSchedule = async (market_id) => {
 }
 
 const postMarketSchedule = async (market_id, schedules) => {
+  console.log(schedules);
   const { data, error } = await supabase
     .from("market_schedule")
     .insert(schedules)
     .select()
 
+    console.log(error);
   return data;
 }
 

@@ -109,7 +109,6 @@ const MarketFloorPlanPage = ({ edit = false }) => {
       }
     }
 
-    console.log(toCreate);
     // DELETE removed stalls
     if (toDelete.length > 0) {
       const resDelete = await fetch(`${base_url}/market/${market_id}/space`, {

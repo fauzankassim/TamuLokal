@@ -2,19 +2,20 @@ import React, { useEffect, useState } from "react";
 import { TbStar, TbStarFilled, TbPhoto } from "react-icons/tb";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 const base_url = import.meta.env.VITE_BACKEND_API_URL;
 const REVIEW_LIMIT = 250;
 
-const ProductReviewForm = ({ product_id, review_id }) => {
+const ProductReviewForm = ({ product_id, review_id, setLoading }) => {
   const session = useAuth(true);
   const visitorId = session?.user?.id;
+  const navigate = useNavigate();
 
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const isEdit = review_id != null && product_id == null;
 
@@ -114,6 +115,7 @@ const ProductReviewForm = ({ product_id, review_id }) => {
       console.error("Failed to submit review", err);
     } finally {
       setLoading(false);
+      navigate(-1);
     }
   };
 
@@ -178,10 +180,10 @@ const ProductReviewForm = ({ product_id, review_id }) => {
       <div className="mt-6 flex justify-end px-4 md:px-0">
         <button
           type="submit"
-          disabled={loading}
+
           className="w-full md:w-auto px-6 md:px-8 py-3 md:py-3.5 bg-[#FF8225] text-white rounded-md font-semibold text-sm md:text-base hover:bg-[#e6731f] transition disabled:opacity-60"
         >
-          {loading ? "Saving..." : isEdit ? "Save" : "Create"}
+          {isEdit ? "Save" : "Create"}
         </button>
       </div>
     </form>
