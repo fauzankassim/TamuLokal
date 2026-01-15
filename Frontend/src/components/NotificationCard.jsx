@@ -2,6 +2,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
 const NotificationCard = ({ notif }) => {
+  console.log(notif);
   const navigate = useNavigate();
   const createdAt = new Date(notif.created_at + "Z");
 

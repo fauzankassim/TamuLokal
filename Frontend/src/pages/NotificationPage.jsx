@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import NotificationCard from "../components/NotificationCard";
 import { useAuth } from "../hooks/useAuth";
-
+import Header from "../components/Header";
 const NotificationPage = () => {
   const session = useAuth();
   const user = session?.user;
@@ -14,8 +14,11 @@ const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  console.log(notifications);
   const getNotificationLink = (notif) => {
+    
   switch (notif.event_id) {
+
     case 1:
       return "/market/history/";
     case 2:
@@ -83,26 +86,13 @@ const NotificationPage = () => {
   }, [notifications]);
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#FFFDFA] flex flex-col items-center font-inter p-4">
+    <div className="relative h-screen  w-full ">
 
-      {/* ─── Header ───────────────────────────────────────────────────── */}
-      <div className="max-w-xl w-full">
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            onClick={() => navigate("/profile")}
-            className="text-gray-700 hover:text-orange-500 transition"
-          >
-            <TbChevronLeft className="text-2xl" />
-          </button>
-
-          <h1 className="text-xl font-semibold text-gray-800">
-            Notifications
-          </h1>
-        </div>
-      </div>
+      <Header title={"Notifications"} />
 
       {/* ─── Notification List ───────────────────────────────────────── */}
-      <div className="max-w-xl w-full space-y-6 overflow-y-auto pb-10">
+      <main className="flex flex-col items-center font-inter p-4 overflow-hidden">
+        <div className="max-w-xl w-full space-y-6 overflow-y-auto pb-10">
 
         {loading ? (
           <p className="text-gray-500">Loading notifications...</p>
@@ -150,6 +140,8 @@ const NotificationPage = () => {
         )}
 
       </div>
+      </main>
+      
 
     </div>
   );
